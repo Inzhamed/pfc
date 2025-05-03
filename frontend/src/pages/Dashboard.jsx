@@ -1,26 +1,33 @@
+import Sidebar from "@/components/Sidebar";
+import DrawerSidebar from "@/components/DrawerSidebar";
+import Notifications from "@/components/Notifications";
 import Map from "@/components/Map";
-import { Card } from "@/components/ui/card";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Dashboard() {
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Navbar */}
-      <header className="bg-white shadow p-4">
-        <h1 className="text-xl font-bold">Rail Defect Dashboard</h1>
-      </header>
+    <div className="flex min-h-screen">
+      {/* Sidebar desktop */}
+      <Sidebar />
 
-      {/* Main Content */}
-      <div className="flex flex-1">
-        {/* Sidebar */}
-        <aside className="w-64 bg-gray-100 p-4">
-          <Card className="p-4 mb-4">
-            <h2 className="text-lg font-semibold">Filters</h2>
-            <p className="text-sm text-muted-foreground">Coming soon...</p>
-          </Card>
-        </aside>
+      {/* Contenu principal */}
+      <div className="flex-1 flex flex-col">
+        <div className="flex items-center justify-between px-4 py-2 border-b border-border">
+          {/* Mobile menu à gauche */}
+          <div className="md:hidden">
+            <DrawerSidebar />
+          </div>
 
-        {/* Map */}
+          {/* Notifications à droite */}
+          <div className="ml-auto">
+            <Notifications />
+            <ThemeToggle />
+          </div>
+        </div>
+
+        {/* Contenu */}
         <main className="flex-1 p-4">
+          <h1 className="text-xl font-bold mb-4">Rail Defect Dashboard</h1>
           <Map />
         </main>
       </div>
