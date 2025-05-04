@@ -1,6 +1,13 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Defect, SeverityLevel } from '@/data/defect-data';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Check, FileText } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
+import { SeverityBadge } from '@/components/history/DefectBadges';
 
 // Define leaflet type for global window
 declare global {
@@ -56,6 +63,10 @@ export const DefectMap: React.FC<DefectMapProps> = ({
   const [mapLoaded, setMapLoaded] = useState(false);
   const leafletMapRef = useRef<any>(null);
   const markersRef = useRef<any>({});
+  const [popupPosition, setPopupPosition] = useState<{ x: number, y: number } | null>(null);
+  const [popupOpen, setPopupOpen] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   // Initialize map
   useEffect(() => {
@@ -131,7 +142,17 @@ export const DefectMap: React.FC<DefectMapProps> = ({
       // Create marker
       const marker = L.marker([lat, lng], { icon: customIcon })
         .addTo(map)
-        .on('click', () => {
+        .on('click', (e: any) => {
+          // Get screen coordinates for popup positioning
+          if (mapRef.current) {
+            const rect = mapRef.current.getBoundingClientRect();
+            const point = map.latLngToContainerPoint([lat, lng]);
+            setPopupPosition({ 
+              x: rect.left + point.x, 
+              y: rect.top + point.y 
+            });
+            setPopupOpen(true);
+          }
           onDefectSelect(defect);
         });
       
@@ -188,11 +209,84 @@ export const DefectMap: React.FC<DefectMapProps> = ({
     });
   }, [selectedDefect, mapLoaded, defects]);
 
+  // Handle repair action
+  const handleMarkAsRepaired = () => {
+    if (!selectedDefect) return;
+    
+    // In a real application, this would call an API to update the defect
+    toast({
+      title: "Defect marked as repaired",
+      description: `Defect ${selectedDefect.id} has been marked as repaired.`,
+    });
+    
+    setPopupOpen(false);
+  };
+
+  // Navigate to reports page with the selected defect
+  const handleStartReport = () => {
+    if (!selectedDefect) return;
+    
+    // Navigate to reports page with defect ID as query param
+    navigate(`/reports?defect=${selectedDefect.id}`);
+  };
+
   return (
     <div 
       ref={mapRef} 
-      className={`h-full w-full rounded-lg overflow-hidden ${className}`}
-    />
+      className={`h-full w-full rounded-lg overflow-hidden relative ${className}`}
+    >
+      {selectedDefect && (
+        <Popover open={popupOpen} onOpenChange={setPopupOpen}>
+          <PopoverTrigger asChild>
+            <div className="hidden">Trigger</div>
+          </PopoverTrigger>
+          <PopoverContent 
+            className="w-80 p-0 rounded-lg overflow-hidden shadow-lg"
+            style={{
+              position: 'absolute',
+              left: (popupPosition?.x || 0) + 'px',
+              top: (popupPosition?.y || 0) + 'px',
+              transform: 'translate(-50%, -120%)',
+            }}
+          >
+            <div className="bg-card border-b">
+              <div className="aspect-video bg-muted relative">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-lg font-medium">{selectedDefect.type.toUpperCase()}</div>
+                </div>
+              </div>
+              
+              <div className="p-4">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="font-semibold">{selectedDefect.id}</h3>
+                  <SeverityBadge severity={selectedDefect.severity} />
+                </div>
+                
+                <div className="space-y-2 text-sm">
+                  <p className="text-muted-foreground">{selectedDefect.description}</p>
+                  <p>Track: {selectedDefect.location.trackId}</p>
+                  <p>Mile marker: {selectedDefect.location.mileMarker}</p>
+                  <p>Detected: {format(new Date(selectedDefect.detectedAt), 'PPP p')}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-3 flex gap-2 justify-end bg-muted/50">
+              {selectedDefect.status !== 'resolved' && (
+                <Button size="sm" onClick={handleMarkAsRepaired}>
+                  <Check className="mr-1 h-4 w-4" />
+                  Mark Repaired
+                </Button>
+              )}
+              <Button size="sm" variant="outline" onClick={handleStartReport}>
+                <FileText className="mr-1 h-4 w-4" />
+                Start Report
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
+      )}
+    </div>
   );
 };
 
