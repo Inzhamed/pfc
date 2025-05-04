@@ -1,1 +1,111 @@
-@import "tailwindcss";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 243 75% 59%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 196 100% 40%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 196 100% 40%;
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 222 84% 5%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 243 75% 59%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 243 75% 59%;
+  }
+
+  .dark {
+    --background: 240 10% 7%;
+    --foreground: 210 40% 98%;
+
+    --card: 240 10% 11%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 240 10% 7%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 243 75% 78%;
+    --primary-foreground: 222 47% 11%;
+
+    --secondary: 196 80% 70%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 240 8% 16%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 240 8% 16%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 70% 70%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 240 8% 16%;
+    --input: 240 8% 16%;
+    --ring: 212 26% 84%;
+
+    --sidebar-background: 240 10% 7%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 243 75% 78%;
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 240 8% 16%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 240 8% 16%;
+    --sidebar-ring: 243 75% 78%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    @apply bg-card/80 backdrop-blur-sm border border-border shadow-sm;
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
