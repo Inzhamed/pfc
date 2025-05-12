@@ -30,7 +30,7 @@ export function DashboardLayout({
           </aside>
         )}
         <main className="flex-1 flex flex-col h-full overflow-hidden">
-          <header className="h-14 border-b px-4 flex items-center justify-between bg-card dark:glass-card">
+          <header className="h-14 border-b px-4 flex items-center justify-between bg-card dark:glass-card z-30">
             {isMobile && (
               <Button
                 variant="ghost"

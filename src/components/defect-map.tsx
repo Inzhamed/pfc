@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import { Defect, SeverityLevel } from '@/data/defect-data';
 import { Button } from '@/components/ui/button';
@@ -234,6 +233,7 @@ export const DefectMap: React.FC<DefectMapProps> = ({
     <div 
       ref={mapRef} 
       className={`h-full w-full rounded-lg overflow-hidden relative ${className}`}
+      style={{zIndex: 1}}
     >
       {selectedDefect && (
         <Popover open={popupOpen} onOpenChange={setPopupOpen}>
@@ -241,7 +241,7 @@ export const DefectMap: React.FC<DefectMapProps> = ({
             <div className="hidden">Trigger</div>
           </PopoverTrigger>
           <PopoverContent 
-            className="w-80 p-0 rounded-lg overflow-hidden shadow-lg"
+            className="w-80 p-0 rounded-lg overflow-hidden shadow-lg z-20"
             style={{
               position: 'absolute',
               left: (popupPosition?.x || 0) + 'px',

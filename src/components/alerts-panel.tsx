@@ -100,7 +100,7 @@ export function AlertsPanel({ onSelectDefect }: AlertsPanelProps) {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
+      <PopoverContent className="w-80 p-0 z-50" align="end">
         <div className="flex items-center justify-between p-3 pb-1">
           <h3 className="font-medium">Recent Alerts</h3>
           {unreadCount > 0 && (
