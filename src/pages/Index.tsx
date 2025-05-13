@@ -1,7 +1,12 @@
-
 import { Navigate } from "react-router-dom";
 
 export default function Index() {
-  // Redirect to dashboard on initial load
-  return <Navigate to="/dashboard" replace />;
+  const isAuthenticated = localStorage.getItem("isLoggedIn") === "true";
+
+  // Redirect to dashboard if logged in, otherwise to login page
+  return isAuthenticated ? (
+    <Navigate to="/dashboard" replace />
+  ) : (
+    <Navigate to="/login" replace />
+  );
 }

@@ -1,10 +1,9 @@
-
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Calendar, LayoutDashboard, Map, Settings, User, X, FileText, History } from "lucide-react";
+import { Calendar, LayoutDashboard, Map, Settings, User, X, FileText, History, LogOut } from "lucide-react";
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 interface DashboardSidebarProps {
   isMobile?: boolean;
@@ -13,6 +12,7 @@ interface DashboardSidebarProps {
 
 export function DashboardSidebar({ isMobile, onClose }: DashboardSidebarProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
 
   const navigationItems = [
@@ -41,6 +41,11 @@ export function DashboardSidebar({ isMobile, onClose }: DashboardSidebarProps) {
       path: "/settings"
     },
   ];
+
+  const handleLogout = () => {
+    localStorage.removeItem("isLoggedIn");
+    navigate("/login");
+  };
 
   return (
     <div className="flex flex-col h-full w-64 bg-sidebar">
@@ -98,7 +103,18 @@ export function DashboardSidebar({ isMobile, onClose }: DashboardSidebarProps) {
       </div>
 
       <div className="mt-auto p-4">
-        <ThemeToggle />
+        <div className="flex items-center justify-between">
+          <ThemeToggle />
+          <Button
+            variant="outline"
+            size="icon"
+            className="text-destructive hover:text-destructive"
+            onClick={handleLogout}
+            title="Logout"
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );

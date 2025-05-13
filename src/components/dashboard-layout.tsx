@@ -1,5 +1,5 @@
-
 import { ReactNode, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
@@ -8,18 +8,30 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { AlertsPanel } from "@/components/alerts-panel";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Defect } from "@/data/defect-data";
+import { useToast } from "@/hooks/use-toast";
 
 interface DashboardLayoutProps {
   children: ReactNode;
   onDefectSelect: (defect: Defect) => void;
 }
 
-export function DashboardLayout({ 
+export function DashboardLayout({
   children,
-  onDefectSelect 
+  onDefectSelect
 }: DashboardLayoutProps) {
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleLogout = () => {
+    localStorage.removeItem("isLoggedIn");
+    toast({
+      title: "Logged out successfully",
+      description: "You have been logged out of your account",
+    });
+    navigate("/login");
+  };
 
   return (
     <ThemeProvider>
@@ -52,7 +64,7 @@ export function DashboardLayout({
       {/* Mobile sidebar */}
       {isMobile && (
         <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-          <SheetContent className="p-0" side="left">
+          <SheetContent className="p-0 z-50" side="left">
             <DashboardSidebar isMobile onClose={() => setSidebarOpen(false)} />
           </SheetContent>
         </Sheet>
