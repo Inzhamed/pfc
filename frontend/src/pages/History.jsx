@@ -46,13 +46,31 @@ const sampleData = [
       lat: 36.7123,
       lng: 3.0987
     }
+  },
+  {
+    id: "D-2023-003",
+    type: "ssquat",
+    status: "reporté",
+    date: "2023-07-10",
+    line: "Ligne C",
+    technician: {
+      name: "Nora Belkacem",
+      matricule: "TECH-1122",
+      function: "Technicienne",
+      interventionDate: "2023-07-12"
+    },
+    location: {
+      pk: "PK 12+500",
+      lat: 36.7520,
+      lng: 3.0410
+    }
   }
 ]
 
 const typeConfig = {
-  joint: { label: "Joint", color: "bg-blue-100 text-blue-800" },
-  squat: { label: "Squat", color: "bg-amber-100 text-amber-800" },
-  ssquat: { label: "SSquat", color: "bg-purple-100 text-purple-800" }
+  joint: { label: "Joint", color: "bg-red-100 text-red-800" },
+  squat: { label: "Squat", color: "bg-orange-100 text-orange-800" },
+  ssquat: { label: "SSquat", color: "bg-yellow-100 text-yellow-800" }
 }
 
 const statusConfig = {
@@ -65,10 +83,7 @@ export default function History() {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedID, setSelectedID] = useState(null)
-  const [filters, setFilters] = useState({
-    status: "all",
-    search: ""
-  })
+  const [filters, setFilters] = useState({ status: "all", search: "" })
 
   useEffect(() => {
     setLoading(true)
@@ -79,56 +94,54 @@ export default function History() {
   }, [])
 
   const filteredData = useMemo(() => {
-    return data.filter(item => 
+    return data.filter(item =>
       (filters.status === "all" || item.status === filters.status) &&
       (!filters.search || item.id.toLowerCase().includes(filters.search.toLowerCase()))
     )
   }, [data, filters])
 
-  const selectedItem = useMemo(() => 
+  const selectedItem = useMemo(() =>
     data.find(item => item.id === selectedID), [data, selectedID]
   )
 
-  const formatDate = (dateString) => 
+  const formatDate = (dateString) =>
     dateString ? format(new Date(dateString), "dd MMMM yyyy", { locale: fr }) : "Non spécifié"
 
-  const openMap = (lat, lng) => 
+  const openMap = (lat, lng) =>
     window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank')
 
   return (
-    <div className="container mx-auto p-4 min-h-screen bg-gray-50">
+    <div className="container mx-auto p-4 min-h-screen bg-[#f9fafb]">
       <Card className="shadow-sm border-0">
-      <div className="w-full fixed top-0 left-0 bg-blue-950 shadow-md z-50"> {/* Nouveau conteneur fixe */}
-      <div className="w-full fixed top-0 left-0 bg-blue-950 shadow-md z-50">
-  <CardHeader className="text-white py-5 min-h-[120px]">
-    <div className="max-w-7xl mx-auto w-full px-6">
-      <CardTitle className="flex items-center text-3xl">
-        <Train className="mr-4 h-9 w-9" />
-        SNTF
-      </CardTitle>
-      <CardDescription className="text-blue-100 text-lg mt-3">
-        Système de Détection des Défauts de Rails
-      </CardDescription>
-    </div>
-  </CardHeader>
-</div>
-</div>
+        <div className="w-full fixed top-0 left-0 bg-[#0a3172] shadow-md z-50">
+          <CardHeader className="text-white py-5 min-h-[120px]">
+            <div className="max-w-7xl mx-auto w-full px-6">
+              <CardTitle className="flex items-center text-3xl">
+                <Train className="mr-4 h-9 w-9" />
+                SNTF
+              </CardTitle>
+              <CardDescription className="text-[#3b82f6] text-lg mt-3">
+                <span className="text-white">Système de Détection des Défauts de Rails</span>
+              </CardDescription>
+            </div>
+          </CardHeader>
+        </div>
 
         <CardContent className="p-0 bg-white">
           <div className="p-6 max-w-6xl mx-auto w-full">
             <div className="flex flex-col md:flex-row gap-4 items-center mb-6">
               <div className="relative w-full">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#6b7280]" />
                 <Input
                   placeholder="Rechercher par ID..."
                   className="pl-10 h-11 text-base"
                   value={filters.search}
-                  onChange={(e) => setFilters({...filters, search: e.target.value})}
+                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                 />
               </div>
-              <Button 
-                variant="outline" 
-                className="h-11 border-blue-300 text-blue-700 hover:bg-blue-50 px-6"
+              <Button
+                variant="outline"
+                className="h-11 border-[#3b82f6] text-[#3b82f6] hover:bg-[#dbeafe] px-6"
                 onClick={() => setFilters({ status: "all", search: "" })}
               >
                 <Filter className="mr-2 h-5 w-5" />
@@ -138,23 +151,23 @@ export default function History() {
 
             {loading ? (
               <div className="flex justify-center items-center py-16">
-                <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+                <Loader2 className="h-10 w-10 animate-spin text-[#3b82f6]" />
               </div>
             ) : (
               <>
                 <Table>
-                  <TableHeader className="bg-gray-50">
+                  <TableHeader className="bg-[#f9fafb]">
                     <TableRow>
-                      <TableHead className="text-gray-700 font-semibold">ID</TableHead>
-                      <TableHead className="text-gray-700 font-semibold">Type</TableHead>
-                      <TableHead className="text-gray-700 font-semibold">Statut</TableHead>
-                      <TableHead className="text-gray-700 font-semibold">Date</TableHead>
-                      <TableHead className="text-gray-700 font-semibold">Actions</TableHead>
+                      <TableHead className="text-[#1f2937] font-semibold">ID</TableHead>
+                      <TableHead className="text-[#1f2937] font-semibold">Type</TableHead>
+                      <TableHead className="text-[#1f2937] font-semibold">Statut</TableHead>
+                      <TableHead className="text-[#1f2937] font-semibold">Date</TableHead>
+                      <TableHead className="text-[#1f2937] font-semibold">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredData.map((item) => (
-                      <TableRow key={item.id} className="hover:bg-gray-50">
+                      <TableRow key={item.id} className="hover:bg-[#f3f4f6]">
                         <TableCell className="font-mono font-medium">{item.id}</TableCell>
                         <TableCell>
                           <Badge className={`${typeConfig[item.type]?.color} px-3 py-1 rounded-md`}>
@@ -166,13 +179,13 @@ export default function History() {
                             {statusConfig[item.status]?.label}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-gray-600">{formatDate(item.date)}</TableCell>
+                        <TableCell className="text-[#6b7280]">{formatDate(item.date)}</TableCell>
                         <TableCell>
                           <div className="flex gap-2">
                             <Button
                               variant="outline"
                               size="sm"
-                              className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                              className="border-[#3b82f6] text-[#3b82f6] hover:bg-[#dbeafe]"
                               onClick={() => setSelectedID(item.id)}
                             >
                               <FileText className="mr-2 h-4 w-4" />
@@ -189,9 +202,9 @@ export default function History() {
                   <Dialog open={!!selectedID} onOpenChange={() => setSelectedID(null)}>
                     <DialogContent className="max-w-4xl">
                       <DialogHeader>
-                        <DialogTitle className="text-blue-800 text-xl">
+                        <DialogTitle className="text-[#1e3a8a] text-xl">
                           <div className="flex items-center gap-3">
-                            <span className="font-mono bg-blue-50 px-4 py-2 rounded-md">
+                            <span className="font-mono bg-[#dbeafe] px-4 py-2 rounded-md">
                               {selectedItem.id}
                             </span>
                             <Badge className={`${typeConfig[selectedItem.type]?.color} px-3 py-1`}>
@@ -199,7 +212,7 @@ export default function History() {
                             </Badge>
                           </div>
                         </DialogTitle>
-                        <DialogDescription className="text-gray-600">
+                        <DialogDescription className="text-[#6b7280]">
                           {selectedItem.line} • Détecté le {formatDate(selectedItem.date)}
                         </DialogDescription>
                       </DialogHeader>
@@ -207,26 +220,26 @@ export default function History() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                         <Card className="border-0 shadow-sm">
                           <CardHeader className="pb-3">
-                            <h3 className="text-lg font-semibold text-blue-800 flex items-center gap-2">
+                            <h3 className="text-lg font-semibold text-[#1e3a8a] flex items-center gap-2">
                               <User className="h-5 w-5" />
                               Responsable technique
                             </h3>
                           </CardHeader>
                           <CardContent className="space-y-4">
                             <div>
-                              <p className="text-sm text-gray-500 mb-1">Nom complet</p>
+                              <p className="text-sm text-[#6b7280] mb-1">Nom complet</p>
                               <p className="font-medium">{selectedItem.technician.name}</p>
                             </div>
                             <div>
-                              <p className="text-sm text-gray-500 mb-1">Matricule</p>
+                              <p className="text-sm text-[#6b7280] mb-1">Matricule</p>
                               <p className="font-mono font-medium">{selectedItem.technician.matricule}</p>
                             </div>
                             <div>
-                              <p className="text-sm text-gray-500 mb-1">Fonction</p>
+                              <p className="text-sm text-[#6b7280] mb-1">Fonction</p>
                               <p className="font-medium">{selectedItem.technician.function}</p>
                             </div>
                             <div>
-                              <p className="text-sm text-gray-500 mb-1">Date intervention</p>
+                              <p className="text-sm text-[#6b7280] mb-1">Date intervention</p>
                               <p className="font-medium flex items-center gap-2">
                                 <Clock className="h-4 w-4" />
                                 {formatDate(selectedItem.technician.interventionDate)}
@@ -237,22 +250,22 @@ export default function History() {
 
                         <Card className="border-0 shadow-sm">
                           <CardHeader className="pb-3">
-                            <h3 className="text-lg font-semibold text-blue-800">
+                            <h3 className="text-lg font-semibold text-[#1e3a8a]">
                               Localisation du défaut
                             </h3>
                           </CardHeader>
                           <CardContent className="space-y-4">
                             <div>
-                              <p className="text-sm text-gray-500 mb-1">Point kilométrique</p>
+                              <p className="text-sm text-[#6b7280] mb-1">Point kilométrique</p>
                               <p className="font-mono font-medium">{selectedItem.location.pk}</p>
                             </div>
                             <div>
-                              <p className="text-sm text-gray-500 mb-1">Ligne ferroviaire</p>
+                              <p className="text-sm text-[#6b7280] mb-1">Ligne ferroviaire</p>
                               <p className="font-medium">{selectedItem.line}</p>
                             </div>
                             <Button
                               onClick={() => openMap(selectedItem.location.lat, selectedItem.location.lng)}
-                              className="w-full mt-4 bg-blue-800 hover:bg-blue-700 text-white h-11"
+                              className="w-full mt-4 bg-[#1e3a8a] hover:bg-[#1e40af] text-white h-11"
                             >
                               Voir sur Google Maps
                             </Button>
