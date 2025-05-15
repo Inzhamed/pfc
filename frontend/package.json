@@ -27,6 +27,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.9.4",
+    "html2pdf.js": "^0.10.3",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.503.0",
     "react": "^19.0.0",
