@@ -6,8 +6,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Dashboard from "@/pages/Dashboard";
 import LoginPage from "@/pages/Login";
 import Reports from "@/pages/Reports";
-import TestPDF from "@/pages/TestPDF";
 import About from "@/pages/About";
+import History from "@/pages/History"
 
 function App() {
   return (
@@ -17,9 +17,8 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/reports" element={<Reports />} />
-        <Route path="/test" element={<TestPDF />} />
-        <Route path="/testpdf" element={<TestPDF />} />
-        <Route path="/about" element={<About />} />
+        <Route path="/history" element={<History />} />
+       <Route path="/about" element={<About />} />
       </Routes>
     </Router>
   );
