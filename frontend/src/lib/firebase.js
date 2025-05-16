@@ -18,3 +18,4 @@ const app = initializeApp(firebaseConfig);
 // ⚠️ C’est ça qu’on va utiliser pour se connecter avec Google :
 export const auth = getAuth(app);
 export const provider = new GoogleAuthProvider();
+

@@ -7,9 +7,9 @@ export default function Sidebar() {
 
   const navItems = [
     { label: "Dashboard", path: "/dashboard", icon: <Home size={18} /> },
-    { label: "Rapport", path: "/rapport", icon: <FileText size={18} /> },
-    { label: "Historique", path: "/historique", icon: <History size={18} /> },
-    { label: "Paramètres", path: "/parametres", icon: <Settings size={18} /> },
+    { label: "reports", path: "/reports", icon: <FileText size={18} /> },
+    { label: "history", path: "/history", icon: <History size={18} /> },
+    { label: "settings", path: "/settings", icon: <Settings size={18} /> },
   ];
 
   return (

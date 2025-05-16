@@ -66,24 +66,32 @@ export default function AboutContact() {
 
   return (
     <div className={`min-h-screen ${darkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-800"}`}>
-      <header className={`py-4 px-6 ${darkMode ? "bg-gray-800" : "bg-[#0a3172]"} text-white`}>
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-3">
-            <Train className="w-6 h-6" />
-            <h1 className="text-xl font-bold">SNTF</h1>
-          </div>
-          <Button variant="ghost" onClick={toggleTheme} className="flex items-center gap-2">
-            {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            {darkMode ? "Clair" : "Sombre"}
-          </Button>
-        </div>
-      </header>
+     <header className={`w-full py-4 px-6 ${darkMode ? "bg-gray-800" : "bg-[#0a3172]"} text-white shadow-md`}>
+  <div className="max-w-6xl mx-auto flex items-center justify-between">
+    <div className="flex items-center space-x-3">
+      <Train className="w-6 h-6" />
+      <h1 className="text-xl font-bold">SNTF</h1>
+    </div>
+    <div className="text-sm opacity-90">Système de Détection des Défauts de Rails</div>
+    <Button
+      variant={darkMode ? "outline" : "ghost"}
+      onClick={toggleTheme}
+      className="flex items-center gap-2"
+      aria-label={darkMode ? "Activer le mode clair" : "Activer le mode sombre"}
+    >
+      {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+    </Button>
+  </div>
+</header>
 
       <main className="max-w-5xl mx-auto py-10 px-6">
-        <div className="flex items-center gap-2 text-xl font-semibold text-[#0a3172] dark:text-white mb-6">
-          <Info className="w-6 h-6" />
-          À propos du système
-        </div>
+    <div className="flex items-center gap-3 mb-6">
+  <div className="bg-blue-100 p-2 rounded-full shadow">
+    <Info className="w-6 h-6 text-blue-700" />
+  </div>
+  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">À propos du système</h2>
+</div>
+
 
         <div className="mb-6 border-b border-gray-300 dark:border-gray-700 flex gap-6">
           <button onClick={() => setActiveTab("about")} className={`${activeTab === "about" ? "font-bold border-b-2 border-blue-600" : "hover:text-blue-500"}`}>À propos</button>
@@ -128,6 +136,10 @@ export default function AboutContact() {
           </form>
         )}
       </main>
+      {/* Pied de page */}
+        <footer className={`mt-8 pt-4 text-center text-sm ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+          <p>© SNTF - Système de Détection des Défauts de Rails</p>
+        </footer>
     </div>
   );
 }
