@@ -81,130 +81,182 @@ export default function Reports() {
   }
 
   const handleGeneratePDF = async () => {
-    if (!reportRef.current || isGeneratingPDF) return
+  if (!reportRef.current || isGeneratingPDF) return;
 
-    try {
-      setIsGeneratingPDF(true)
+  try {
+    setIsGeneratingPDF(true);
 
-      // Créer un nouveau div pour le PDF avec une mise en page optimisée
-      const pdfContainer = document.createElement("div")
-      pdfContainer.style.width = "210mm"
-      pdfContainer.style.padding = "15mm"
-      pdfContainer.style.backgroundColor = "white"
-      pdfContainer.style.color = "#333"
-      pdfContainer.style.fontFamily = "Arial, sans-serif"
+    // Créer un nouveau div pour le PDF avec une mise en page optimisée
+    const pdfContainer = document.createElement("div");
+    pdfContainer.style.width = "210mm";
+    pdfContainer.style.padding = "15mm";
+    pdfContainer.style.backgroundColor = "white";
+    pdfContainer.style.color = "#333";
+    pdfContainer.style.fontFamily = "Arial, sans-serif";
 
-      // Créer le contenu du PDF avec une mise en page améliorée
-      pdfContainer.innerHTML = `
-        <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #0a3172; padding-bottom: 15px;">
-          <h1 style="font-size: 26px; color: #0a3172; margin: 0;">SNTF - Rapport de Panne</h1>
-          <p style="color: #666; margin-top: 5px;">Système de Détection des Défauts de Rails</p>
-        </div>
-        
-        <div style="display: flex; justify-content: space-between; margin-bottom: 25px;">
-          <div style="width: 48%;">
-            <div style="margin-bottom: 20px;">
-              <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Nom du technicien</p>
-              <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${document.getElementById("technician-name")?.value || "Non spécifié"}</p>
-            </div>
-            
-            <div style="margin-bottom: 20px;">
-              <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Fonction</p>
-              <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${document.getElementById("technician-role")?.value || "Non spécifié"}</p>
-            </div>
+    // Créer le contenu du PDF avec une mise en page améliorée
+    pdfContainer.innerHTML = `
+      <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #0a3172; padding-bottom: 15px;">
+        <h1 style="font-size: 26px; color: #0a3172; margin: 0;">SNTF - Rapport de Panne</h1>
+        <p style="color: #666; margin-top: 5px;">Système de Détection des Défauts de Rails</p>
+      </div>
+      
+      <div style="display: flex; justify-content: space-between; margin-bottom: 25px;">
+        <div style="width: 48%;">
+          <div style="margin-bottom: 20px;">
+            <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Nom du technicien</p>
+            <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${
+              document.getElementById("technician-name")?.value || "Non spécifié"
+            }</p>
           </div>
           
-          <div style="width: 48%;">
-            <div style="margin-bottom: 20px;">
-              <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Matricule</p>
-              <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${document.getElementById("technician-id")?.value || "Non spécifié"}</p>
-            </div>
-            
-            <div style="margin-bottom: 20px;">
-              <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Date</p>
-              <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${document.getElementById("report-date")?.value || today}</p>
-            </div>
+          <div style="margin-bottom: 20px;">
+            <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Fonction</p>
+            <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${
+              document.getElementById("technician-role")?.value || "Non spécifié"
+            }</p>
           </div>
         </div>
         
-        <div style="margin-bottom: 20px;">
-          <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Localisation du défaut</p>
-          <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${document.getElementById("location")?.value || "Non spécifié"}</p>
-        </div>
-        
-        <div style="margin-bottom: 20px;">
-          <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Type de défaut</p>
-          <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${document.getElementById("defect-type")?.value || "Non spécifié"}</p>
-        </div>
-        
-        <div style="margin-bottom: 20px;">
-          <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Description</p>
-          <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9; min-height: 80px;">${document.getElementById("description")?.value || "Non spécifié"}</p>
-        </div>
-        
-        <div style="margin-bottom: 20px;">
-          <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Action réalisée</p>
-          <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${document.getElementById("action")?.value || "Non spécifié"}</p>
-        </div>
-        
-        <div style="margin-top: 40px; border-top: 1px solid #ddd; padding-top: 20px; text-align: center; color: #666; font-size: 12px;">
-          <p>SNTF - Système de Détection des Défauts de Rails</p>
-          <p>Document généré le ${new Date().toLocaleDateString("fr-FR")} à ${new Date().toLocaleTimeString("fr-FR")}</p>
-        </div>
-      `
-
-      // Ajouter l'image si elle existe
-      const photoInput = document.getElementById("photo")
-      if (photoInput && photoInput.files && photoInput.files[0]) {
-        pdfContainer.innerHTML += `
-          <div style="margin-top: 20px;">
-            <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Photo</p>
-            <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">Photo jointe au rapport</p>
+        <div style="width: 48%;">
+          <div style="margin-bottom: 20px;">
+            <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Matricule</p>
+            <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${
+              document.getElementById("technician-id")?.value || "Non spécifié"
+            }</p>
           </div>
-        `
+          
+          <div style="margin-bottom: 20px;">
+            <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Date</p>
+            <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${
+              document.getElementById("report-date")?.value || today
+            }</p>
+          </div>
+        </div>
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Localisation du défaut</p>
+        <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${
+          document.getElementById("location")?.value || "Non spécifié"
+        }</p>
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Ligne ferroviaire</p>
+        <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${
+          document.getElementById("line")?.value || "Non spécifié"
+        }</p>
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Point Kilométrique (PK)</p>
+        <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${
+          document.getElementById("pk")?.value || "Non spécifié"
+        }</p>
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Type de défaut</p>
+        <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${
+          document.getElementById("defect-type")?.value || "Non spécifié"
+        }</p>
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Description</p>
+        <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9; min-height: 80px;">${
+          document.getElementById("description")?.value || "Non spécifié"
+        }</p>
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Action réalisée</p>
+        <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${
+          document.getElementById("action")?.value || "Non spécifié"
+        }</p>
+      </div>
+      
+      ${
+        document.getElementById("image")?.files?.length > 0
+          ? `
+          <div style="margin-bottom: 20px;">
+            <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Image jointe</p>
+            <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">
+              Image disponible dans le rapport original
+            </p>
+          </div>
+          `
+          : ""
       }
+      
+      <div style="margin-top: 40px; border-top: 1px solid #ddd; padding-top: 20px; text-align: center; color: #666; font-size: 12px;">
+        <p>SNTF - Système de Détection des Défauts de Rails</p>
+        <p>Document généré le ${new Date().toLocaleDateString("fr-FR")} à ${new Date().toLocaleTimeString(
+      "fr-FR"
+    )}</p>
+      </div>
+    `;
 
-      // Options pour html2pdf
-      const opt = {
-        margin: [10, 10, 10, 10],
-        filename: `SNTF-Rapport-Panne-${today}.pdf`,
-        image: { type: "jpeg", quality: 1 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          letterRendering: true,
-        },
-        jsPDF: {
-          unit: "mm",
-          format: "a4",
-          orientation: "portrait",
-          compress: true,
-        },
-        pagebreak: { mode: "avoid-all" },
-      }
+    // Options pour html2pdf
+    const opt = {
+      margin: [10, 10, 10, 10],
+      filename: `SNTF-Rapport-Panne-${today}.pdf`,
+      image: { type: "jpeg", quality: 1 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        letterRendering: true,
+      },
+      jsPDF: {
+        unit: "mm",
+        format: "a4",
+        orientation: "portrait",
+        compress: true,
+      },
+      pagebreak: { mode: "avoid-all" },
+    };
 
-      // Générer le PDF
-      await html2pdf().from(pdfContainer).set(opt).save()
-    } catch (error) {
-      console.error("Erreur lors de la génération du PDF:", error)
-      alert("Une erreur est survenue lors de la génération du PDF. Veuillez réessayer.")
-    } finally {
-      setIsGeneratingPDF(false)
-    }
+    // Générer le PDF
+    await html2pdf().from(pdfContainer).set(opt).save();
+  } catch (error) {
+    console.error("Erreur lors de la génération du PDF:", error);
+    alert("Une erreur est survenue lors de la génération du PDF. Veuillez réessayer.");
+  } finally {
+    setIsGeneratingPDF(false);
   }
+};
 
   return (
     <div className={`min-h-screen ${darkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-800"}`}>
       {/* En-tête avec logo et titre */}
       <header className={`w-full py-4 px-6 ${darkMode ? "bg-gray-800" : "bg-[#0a3172]"} text-white shadow-md`}>
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Train className="w-6 h-6" />
-            <h1 className="text-xl font-bold">SNTF</h1>
-          </div>
-          <div className="text-sm opacity-90">Système de Détection des Défauts de Rails</div>
-        </div>
-      </header>
+  <div className="max-w-6xl mx-auto flex items-center justify-between">
+    <div className="flex items-center space-x-3">
+      <Train className="w-6 h-6" />
+      <h1 className="text-xl font-bold">SNTF</h1>
+    </div>
+    <div className="text-sm opacity-90">Système de Détection des Défauts de Rails</div>
+    <Button
+      variant={darkMode ? "outline" : "ghost"}
+      onClick={toggleTheme}
+      className="flex items-center gap-2"
+      aria-label={darkMode ? "Activer le mode clair" : "Activer le mode sombre"}
+    >
+      {darkMode ? (
+        <>
+          <Sun className="w-4 h-4" />
+          
+        </>
+      ) : (
+        <>
+          <Moon className="w-4 h-4" />
+         
+        </>
+      )}
+    </Button>
+  </div>
+</header>
 
       <div className="max-w-4xl mx-auto py-8 px-4">
         {/* Titre de la page */}
@@ -218,24 +270,7 @@ export default function Reports() {
             </div>
 
             <div className="flex space-x-3">
-              <Button
-                variant={darkMode ? "outline" : "ghost"}
-                onClick={toggleTheme}
-                className="flex items-center gap-2"
-                aria-label={darkMode ? "Activer le mode clair" : "Activer le mode sombre"}
-              >
-                {darkMode ? (
-                  <>
-                    <Sun className="w-4 h-4" />
-                    <span className="hidden sm:inline">Mode clair</span>
-                  </>
-                ) : (
-                  <>
-                    <Moon className="w-4 h-4" />
-                    <span className="hidden sm:inline">Mode sombre</span>
-                  </>
-                )}
-              </Button>
+        
               <Button
                 variant="outline"
                 onClick={handleGeneratePDF}
@@ -354,6 +389,49 @@ export default function Reports() {
                 />
               </div>
 
+
+              {/* Ajouter ce champ après le champ "Localisation du défaut" */}
+<div className="space-y-2">
+  <label
+    htmlFor="line"
+    className={`font-medium flex gap-2 items-center ${darkMode ? "text-gray-200" : "text-gray-700"}`}
+  >
+    <Train className="w-4 h-4" />
+    Ligne ferroviaire
+  </label>
+  <select
+    id="line"
+    className={`w-full p-3 rounded-md border-2 ${
+      darkMode
+        ? "bg-gray-700 border-gray-700 text-white"
+        : "bg-white border-blue-100 focus:border-blue-300"
+    }`}
+    defaultValue=""
+  >
+    <option value="" disabled>Choisir une ligne...</option>
+    <option value="ALGER-ORAN">ALGER-ORAN</option>
+    <option value="ALGER-CONSTANTINE">ALGER-CONSTANTINE</option>
+    <option value="ORAN-BEJAIA">ORAN-BEJAIA</option>
+  </select>
+</div>
+
+{/* Nouveau champ Point Kilométrique */}
+<div className="space-y-2">
+  <label
+    htmlFor="pk"
+    className={`font-medium flex gap-2 items-center ${darkMode ? "text-gray-200" : "text-gray-700"}`}
+  >
+    <MapPin className="w-4 h-4" />
+    Point Kilométrique (PK)
+  </label>
+  <Input
+    id="pk"
+    placeholder="Ex: PK 15+780"
+    className={`border-2 ${darkMode ? "border-gray-700" : "border-blue-100 focus:border-blue-300"}`}
+  />
+</div>
+
+
               <div className="space-y-2">
                 <label
                   htmlFor="defect-type"
@@ -428,23 +506,33 @@ export default function Reports() {
 
               <div className="space-y-2">
                 <label
-                  htmlFor="photo"
+                  htmlFor="Image"
                   className={`font-medium flex gap-2 items-center ${darkMode ? "text-gray-200" : "text-gray-700"}`}
                 >
                   <ImageIcon className="w-4 h-4" />
-                  Photo (optionnelle)
+                  Image (optionnelle)
                 </label>
                 <Input
-                  id="photo"
+                  id="image"
                   type="file"
                   accept="image/*"
                   className={`border-2 ${darkMode ? "border-gray-700" : "border-blue-100 focus:border-blue-300"}`}
                 />
               </div>
             </form>
-          </div>
+       </div>
         )}
-
+       <div className="mt-8 flex justify-center">
+  <Button
+    className="px-8 py-6 text-lg font-semibold bg-[#0a3172] hover:bg-[#0a3172]/90 text-white"
+    onClick={() => {
+      // Ajoutez ici la logique de confirmation du rapport
+      alert("Rapport confirmé et enregistré avec succès !");
+    }}
+  >
+    Confirmer le rapport
+  </Button>
+</div>
         {/* Pied de page */}
         <footer className={`mt-8 pt-4 text-center text-sm ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
           <p>© SNTF - Système de Détection des Défauts de Rails</p>

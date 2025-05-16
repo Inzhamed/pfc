@@ -19,7 +19,7 @@ export default function Map() {
     <MapContainer
       center={[36.7, 3.2]}
       zoom={13}
-      className="h-[600px] w-full rounded shadow"
+      className="h-[600px] w-full rounded shadow z-0"
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
