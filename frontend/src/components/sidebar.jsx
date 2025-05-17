@@ -1,9 +1,7 @@
-"use client"
-
 import { Link, useLocation } from "react-router-dom"
-import { Home, FileText, History, Settings, Train, Info } from "lucide-react"
+import { Home, FileText, History, Settings, Train, Info, X } from "lucide-react"
 
-export default function Sidebar({ darkMode }) {
+export default function Sidebar({ darkMode, isMobileOpen, setIsMobileOpen }) {
   const location = useLocation()
   const currentPath = location.pathname
 
@@ -16,16 +14,16 @@ export default function Sidebar({ darkMode }) {
   ]
 
   return (
-    <aside className={`hidden md:flex h-screen w-64 ${darkMode ? "bg-gray-800" : "bg-[#0a3172]"} text-white flex-col`}>
-      <div className={`p-4 border-b ${darkMode ? "border-gray-700" : "border-blue-800/30"}`}>
-        <div className="flex items-center space-x-2">
-          <Train className="w-5 h-5" />
-          <h2 className="text-lg font-bold">Rail Defect App</h2>
+    <>
+      {/* Sidebar Desktop */}
+      <aside className={`hidden md:flex h-screen w-64 ${darkMode ? "bg-gray-800" : "bg-[#0a3172]"} text-white flex-col`}>
+        <div className="p-4 border-b">
+          <div className="flex items-center space-x-2">
+            <Train className="w-5 h-5" />
+            <h2 className="text-lg font-bold">Rail Defect App</h2>
+          </div>
         </div>
-      </div>
-
-      <nav className="flex-1 p-4">
-        <div className="flex flex-col gap-2">
+        <nav className="flex-1 p-4">
           {navItems.map(({ label, icon, path }) => {
             const isActive = currentPath === path
             return (
@@ -47,8 +45,40 @@ export default function Sidebar({ darkMode }) {
               </Link>
             )
           })}
+        </nav>
+      </aside>
+
+      {/* Sidebar Mobile */}
+      {isMobileOpen && (
+        <div className={`fixed inset-0 z-40 flex md:hidden`}>
+          <div className={`w-64 ${darkMode ? "bg-gray-800" : "bg-[#0a3172]"} text-white flex flex-col`}>
+            <div className="flex items-center justify-between p-4 border-b">
+              <div className="flex items-center space-x-2">
+                <Train className="w-5 h-5" />
+                <h2 className="text-lg font-bold">Rail Defect App</h2>
+              </div>
+              <button onClick={() => setIsMobileOpen(false)}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <nav className="flex-1 p-4">
+              {navItems.map(({ label, icon, path }) => (
+                <Link
+                  key={path}
+                  to={path}
+                  onClick={() => setIsMobileOpen(false)}
+                  className="flex items-center gap-3 p-2 rounded-md hover:bg-white/10"
+                >
+                  {icon}
+                  <span>{label}</span>
+                </Link>
+              ))}
+            </nav>
+          </div>
+          {/* overlay */}
+          <div className="flex-1 bg-black bg-opacity-50" onClick={() => setIsMobileOpen(false)} />
         </div>
-      </nav>
-    </aside>
+      )}
+    </>
   )
 }
