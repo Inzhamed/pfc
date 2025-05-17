@@ -1,25 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import LoginForm from '../components/ui/LoginForm';
-import { useNavigate } from 'react-router-dom'; // <-- pour la redirection
+import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@/components/theme-provider';
 
 const LoginPage = () => {
-  const [darkMode, setDarkMode] = useState(false);
-  const navigate = useNavigate(); // hook de redirection
+  const navigate = useNavigate();
+  const { theme, setTheme } = useTheme(); // 👈 gestion du thème global
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
-  // Appliquer le thème
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', darkMode);
-  }, [darkMode]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Tentative de connexion:', { email, password });
 
-    // Tu peux mettre ici ta logique Firebase ou autre
-    // Pour l’instant, on redirige directement vers /dashboard
+    // Ici tu peux insérer ta logique d'authentification
     navigate('/dashboard');
+  };
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   return (
@@ -36,10 +35,10 @@ const LoginPage = () => {
         </p>
 
         <button
-          onClick={() => setDarkMode(!darkMode)}
+          onClick={toggleTheme}
           className="mt-10 self-start bg-gray-200 dark:bg-gray-600 text-sm px-4 py-2 rounded hover:bg-gray-300 dark:hover:bg-gray-500 transition"
         >
-          {darkMode ? '☀️ Mode clair' : '🌙 Mode sombre'}
+          {theme === 'dark' ? '☀️ Mode clair' : '🌙 Mode sombre'}
         </button>
       </div>
 
