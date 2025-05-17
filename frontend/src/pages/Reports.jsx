@@ -19,36 +19,31 @@ import {
   AlertTriangle,
 } from "lucide-react"
 
+
 export default function Reports() {
   const today = new Date().toISOString().split("T")[0]
   const reportRef = useRef(null)
   const [isClient, setIsClient] = useState(false)
-  const [darkMode, setDarkMode] = useState(false)
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
+  const [isDark, setIsDark] = useState(false)
 
   useEffect(() => {
     setIsClient(true)
-    // Vérifier si le mode sombre était activé précédemment
-    const savedTheme = localStorage.getItem("theme")
-    if (savedTheme === "dark") {
-      setDarkMode(true)
-      document.documentElement.classList.add("dark")
-    }
+    // Vérifier le thème au montage
+    setIsDark(document.documentElement.classList.contains("dark"))
+    
+    // Observer les changements de classe sur l'élément html
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains("dark"))
+    })
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    })
+
+    return () => observer.disconnect()
   }, [])
-
-  const toggleTheme = () => {
-    const newDarkMode = !darkMode
-    setDarkMode(newDarkMode)
-
-    // Appliquer ou supprimer la classe dark sur l'élément HTML
-    if (newDarkMode) {
-      document.documentElement.classList.add("dark")
-      localStorage.setItem("theme", "dark")
-    } else {
-      document.documentElement.classList.remove("dark")
-      localStorage.setItem("theme", "light")
-    }
-  }
 
   const handlePrint = () => {
     if (!reportRef.current) return
@@ -224,14 +219,14 @@ export default function Reports() {
   }
 
   return (
-    <div className={`min-h-screen ${darkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-800"}`}>
+    <div className={`min-h-screen ${isDark ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-800"}`}>
       <div className="max-w-4xl mx-auto py-8 px-4">
         {/* Titre de la page */}
-        <div className={`mb-8 pb-4 border-b ${darkMode ? "border-gray-700" : "border-gray-200"}`}>
+        <div className={`mb-8 pb-4 border-b ${isDark ? "border-gray-700" : "border-gray-200"}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className={`p-2 rounded-full ${darkMode ? "bg-blue-900" : "bg-blue-100"}`}>
-                <AlertTriangle className={`w-6 h-6 ${darkMode ? "text-blue-300" : "text-blue-700"}`} />
+              <div className={`p-2 rounded-full ${isDark ? "bg-blue-900" : "bg-blue-100"}`}>
+                <AlertTriangle className={`w-6 h-6 ${isDark ? "text-blue-300" : "text-blue-700"}`} />
               </div>
               <h2 className="text-2xl font-bold">Rapport de Panne</h2>
             </div>
@@ -240,13 +235,17 @@ export default function Reports() {
               <Button
                 variant="outline"
                 onClick={handleGeneratePDF}
-                className="flex items-center gap-2"
+                className={`flex items-center gap-2 ${isDark ? "border-gray-600 hover:bg-gray-700" : "border-blue-200 hover:bg-blue-50"}`}
                 disabled={isGeneratingPDF}
               >
                 <FileDown className="w-4 h-4" />
                 <span className="hidden sm:inline">{isGeneratingPDF ? "Génération..." : "Générer PDF"}</span>
               </Button>
-              <Button variant="outline" onClick={handlePrint} className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                onClick={handlePrint} 
+                className={`flex items-center gap-2 ${isDark ? "border-gray-600 hover:bg-gray-700" : "border-blue-200 hover:bg-blue-50"}`}
+              >
                 <Printer className="w-4 h-4" />
                 <span className="hidden sm:inline">Imprimer</span>
               </Button>
@@ -258,22 +257,22 @@ export default function Reports() {
           <div
             ref={reportRef}
             className={`rounded-xl shadow-lg p-6 md:p-8 ${
-              darkMode ? "bg-gray-800 border border-gray-700" : "bg-white border border-blue-100"
+              isDark ? "bg-gray-800 border border-gray-700" : "bg-white border border-blue-100"
             }`}
           >
             <div className="flex justify-center mb-6">
               <div
                 className={`inline-flex items-center justify-center p-3 rounded-full ${
-                  darkMode ? "bg-blue-900/30" : "bg-blue-50"
+                  isDark ? "bg-blue-900/30" : "bg-blue-50"
                 }`}
               >
-                <ClipboardList className={`w-8 h-8 ${darkMode ? "text-blue-300" : "text-[#0a3172]"}`} />
+                <ClipboardList className={`w-8 h-8 ${isDark ? "text-blue-300" : "text-[#0a3172]"}`} />
               </div>
             </div>
 
             <h1
               className={`text-2xl md:text-3xl font-bold text-center mb-8 ${
-                darkMode ? "text-white" : "text-[#0a3172]"
+                isDark ? "text-white" : "text-[#0a3172]"
               }`}
             >
               Rapport d'intervention
@@ -284,7 +283,7 @@ export default function Reports() {
                 <div className="space-y-2">
                   <label
                     htmlFor="technician-name"
-                    className={`font-medium flex gap-2 items-center ${darkMode ? "text-gray-200" : "text-gray-700"}`}
+                    className={`font-medium flex gap-2 items-center ${isDark ? "text-gray-200" : "text-gray-700"}`}
                   >
                     <User className="w-4 h-4" />
                     Nom du technicien
@@ -292,13 +291,13 @@ export default function Reports() {
                   <Input
                     id="technician-name"
                     placeholder="Ex: Bouchra Amari"
-                    className={`border-2 ${darkMode ? "border-gray-700" : "border-blue-100 focus:border-blue-300"}`}
+                    className={`border-2 ${isDark ? "border-gray-700 bg-gray-700 text-white" : "border-blue-100 focus:border-blue-300 bg-white"}`}
                   />
                 </div>
                 <div className="space-y-2">
                   <label
                     htmlFor="technician-id"
-                    className={`font-medium flex gap-2 items-center ${darkMode ? "text-gray-200" : "text-gray-700"}`}
+                    className={`font-medium flex gap-2 items-center ${isDark ? "text-gray-200" : "text-gray-700"}`}
                   >
                     <BadgeCheck className="w-4 h-4" />
                     Matricule
@@ -306,13 +305,13 @@ export default function Reports() {
                   <Input
                     id="technician-id"
                     placeholder="Ex: TECH-4092"
-                    className={`border-2 ${darkMode ? "border-gray-700" : "border-blue-100 focus:border-blue-300"}`}
+                    className={`border-2 ${isDark ? "border-gray-700 bg-gray-700 text-white" : "border-blue-100 focus:border-blue-300 bg-white"}`}
                   />
                 </div>
                 <div className="space-y-2">
                   <label
                     htmlFor="technician-role"
-                    className={`font-medium flex gap-2 items-center ${darkMode ? "text-gray-200" : "text-gray-700"}`}
+                    className={`font-medium flex gap-2 items-center ${isDark ? "text-gray-200" : "text-gray-700"}`}
                   >
                     <User className="w-4 h-4" />
                     Fonction
@@ -320,13 +319,13 @@ export default function Reports() {
                   <Input
                     id="technician-role"
                     placeholder="Ex: Technicienne d'inspection"
-                    className={`border-2 ${darkMode ? "border-gray-700" : "border-blue-100 focus:border-blue-300"}`}
+                    className={`border-2 ${isDark ? "border-gray-700 bg-gray-700 text-white" : "border-blue-100 focus:border-blue-300 bg-white"}`}
                   />
                 </div>
                 <div className="space-y-2">
                   <label
                     htmlFor="report-date"
-                    className={`font-medium flex gap-2 items-center ${darkMode ? "text-gray-200" : "text-gray-700"}`}
+                    className={`font-medium flex gap-2 items-center ${isDark ? "text-gray-200" : "text-gray-700"}`}
                   >
                     <CalendarDays className="w-4 h-4" />
                     Date
@@ -335,7 +334,7 @@ export default function Reports() {
                     id="report-date"
                     type="date"
                     defaultValue={today}
-                    className={`border-2 ${darkMode ? "border-gray-700" : "border-blue-100 focus:border-blue-300"}`}
+                    className={`border-2 ${isDark ? "border-gray-700 bg-gray-700 text-white" : "border-blue-100 focus:border-blue-300 bg-white"}`}
                   />
                 </div>
               </div>
@@ -343,7 +342,7 @@ export default function Reports() {
               <div className="space-y-2">
                 <label
                   htmlFor="location"
-                  className={`font-medium flex gap-2 items-center ${darkMode ? "text-gray-200" : "text-gray-700"}`}
+                  className={`font-medium flex gap-2 items-center ${isDark ? "text-gray-200" : "text-gray-700"}`}
                 >
                   <MapPin className="w-4 h-4" />
                   Localisation du défaut
@@ -351,15 +350,14 @@ export default function Reports() {
                 <Input
                   id="location"
                   placeholder="Ex : Voie 3 - KM 47.3"
-                  className={`border-2 ${darkMode ? "border-gray-700" : "border-blue-100 focus:border-blue-300"}`}
+                  className={`border-2 ${isDark ? "border-gray-700 bg-gray-700 text-white" : "border-blue-100 focus:border-blue-300 bg-white"}`}
                 />
               </div>
 
-              {/* Ajouter ce champ après le champ "Localisation du défaut" */}
               <div className="space-y-2">
                 <label
                   htmlFor="line"
-                  className={`font-medium flex gap-2 items-center ${darkMode ? "text-gray-200" : "text-gray-700"}`}
+                  className={`font-medium flex gap-2 items-center ${isDark ? "text-gray-200" : "text-gray-700"}`}
                 >
                   <Train className="w-4 h-4" />
                   Ligne ferroviaire
@@ -367,7 +365,7 @@ export default function Reports() {
                 <select
                   id="line"
                   className={`w-full p-3 rounded-md border-2 ${
-                    darkMode
+                    isDark
                       ? "bg-gray-700 border-gray-700 text-white"
                       : "bg-white border-blue-100 focus:border-blue-300"
                   }`}
@@ -382,11 +380,10 @@ export default function Reports() {
                 </select>
               </div>
 
-              {/* Nouveau champ Point Kilométrique */}
               <div className="space-y-2">
                 <label
                   htmlFor="pk"
-                  className={`font-medium flex gap-2 items-center ${darkMode ? "text-gray-200" : "text-gray-700"}`}
+                  className={`font-medium flex gap-2 items-center ${isDark ? "text-gray-200" : "text-gray-700"}`}
                 >
                   <MapPin className="w-4 h-4" />
                   Point Kilométrique (PK)
@@ -394,14 +391,14 @@ export default function Reports() {
                 <Input
                   id="pk"
                   placeholder="Ex: PK 15+780"
-                  className={`border-2 ${darkMode ? "border-gray-700" : "border-blue-100 focus:border-blue-300"}`}
+                  className={`border-2 ${isDark ? "border-gray-700 bg-gray-700 text-white" : "border-blue-100 focus:border-blue-300 bg-white"}`}
                 />
               </div>
 
               <div className="space-y-2">
                 <label
                   htmlFor="defect-type"
-                  className={`font-medium flex gap-2 items-center ${darkMode ? "text-gray-200" : "text-gray-700"}`}
+                  className={`font-medium flex gap-2 items-center ${isDark ? "text-gray-200" : "text-gray-700"}`}
                 >
                   <AlertTriangle className="w-4 h-4" />
                   Type de défaut
@@ -409,7 +406,7 @@ export default function Reports() {
                 <select
                   id="defect-type"
                   className={`w-full p-3 rounded-md border-2 ${
-                    darkMode
+                    isDark
                       ? "bg-gray-700 border-gray-700 text-white"
                       : "bg-white border-blue-100 focus:border-blue-300"
                   }`}
@@ -427,7 +424,7 @@ export default function Reports() {
               <div className="space-y-2">
                 <label
                   htmlFor="description"
-                  className={`font-medium flex gap-2 items-center ${darkMode ? "text-gray-200" : "text-gray-700"}`}
+                  className={`font-medium flex gap-2 items-center ${isDark ? "text-gray-200" : "text-gray-700"}`}
                 >
                   <FileText className="w-4 h-4" />
                   Description
@@ -435,7 +432,7 @@ export default function Reports() {
                 <textarea
                   id="description"
                   className={`w-full p-3 rounded-md border-2 ${
-                    darkMode
+                    isDark
                       ? "bg-gray-700 border-gray-700 text-white"
                       : "bg-white border-blue-100 focus:border-blue-300"
                   }`}
@@ -447,7 +444,7 @@ export default function Reports() {
               <div className="space-y-2">
                 <label
                   htmlFor="action"
-                  className={`font-medium flex gap-2 items-center ${darkMode ? "text-gray-200" : "text-gray-700"}`}
+                  className={`font-medium flex gap-2 items-center ${isDark ? "text-gray-200" : "text-gray-700"}`}
                 >
                   <CheckCircle className="w-4 h-4" />
                   Action réalisée
@@ -455,7 +452,7 @@ export default function Reports() {
                 <select
                   id="action"
                   className={`w-full p-3 rounded-md border-2 ${
-                    darkMode
+                    isDark
                       ? "bg-gray-700 border-gray-700 text-white"
                       : "bg-white border-blue-100 focus:border-blue-300"
                   }`}
@@ -473,7 +470,7 @@ export default function Reports() {
               <div className="space-y-2">
                 <label
                   htmlFor="Image"
-                  className={`font-medium flex gap-2 items-center ${darkMode ? "text-gray-200" : "text-gray-700"}`}
+                  className={`font-medium flex gap-2 items-center ${isDark ? "text-gray-200" : "text-gray-700"}`}
                 >
                   <ImageIcon className="w-4 h-4" />
                   Image (optionnelle)
@@ -482,7 +479,7 @@ export default function Reports() {
                   id="image"
                   type="file"
                   accept="image/*"
-                  className={`border-2 ${darkMode ? "border-gray-700" : "border-blue-100 focus:border-blue-300"}`}
+                  className={`border-2 ${isDark ? "border-gray-700 bg-gray-700" : "border-blue-100 focus:border-blue-300 bg-white"}`}
                 />
               </div>
             </form>
@@ -490,9 +487,8 @@ export default function Reports() {
         )}
         <div className="mt-8 flex justify-center">
           <Button
-            className="px-8 py-6 text-lg font-semibold bg-[#0a3172] hover:bg-[#0a3172]/90 text-white"
+            className={`px-8 py-6 text-lg font-semibold ${isDark ? "bg-blue-800 hover:bg-blue-900" : "bg-[#0a3172] hover:bg-[#0a3172]/90"} text-white`}
             onClick={() => {
-              // Ajoutez ici la logique de confirmation du rapport
               alert("Rapport confirmé et enregistré avec succès !")
             }}
           >
@@ -500,10 +496,11 @@ export default function Reports() {
           </Button>
         </div>
         {/* Pied de page */}
-        <footer className={`mt-8 pt-4 text-center text-sm ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+        <footer className={`mt-8 pt-4 text-center text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
           <p>© SNTF - Système de Détection des Défauts de Rails</p>
         </footer>
       </div>
     </div>
   )
+  
 }

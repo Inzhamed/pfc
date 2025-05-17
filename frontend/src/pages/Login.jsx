@@ -1,13 +1,29 @@
-import React, { useState } from 'react';
-import LoginForm from '../components/ui/LoginForm';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '@/components/theme-provider';
+import { Moon, Sun } from 'lucide-react'; // Ajout des icônes
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    // Vérifier le thème au montage
+    setIsDark(document.documentElement.classList.contains("dark"));
+    
+    // Observer les changements de classe sur l'élément html
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -16,41 +32,47 @@ const LoginPage = () => {
   };
 
   const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
+    const newTheme = isDark ? 'light' : 'dark';
+    document.documentElement.classList.remove(isDark ? 'dark' : 'light');
+    document.documentElement.classList.add(newTheme);
+    localStorage.setItem('theme', newTheme);
+    setIsDark(!isDark);
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row transition duration-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <div className={`min-h-screen flex flex-col md:flex-row ${isDark ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-800"}`}>
+      {/* Bouton de changement de thème en haut à droite */}
+      <button
+        onClick={toggleTheme}
+        className={`absolute top-4 right-4 p-2 rounded-full ${isDark ? "bg-gray-700 hover:bg-gray-600" : "bg-gray-200 hover:bg-gray-300"} transition`}
+        aria-label="Changer de thème"
+      >
+        {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+      </button>
+
       {/* Colonne gauche */}
-      <div className="w-full md:w-1/2 p-8 md:p-16 flex flex-col justify-center bg-gradient-to-br from-blue-100 to-blue-50 dark:from-gray-800 dark:to-gray-700">
-        <h1 className="text-4xl font-bold mb-6 md:mb-10 dark:text-white text-center md:text-left">
-          RailVision
+      <div className={`w-full md:w-1/2 p-8 md:p-16 flex flex-col justify-center ${isDark ? "bg-gray-800" : "bg-blue-50"}`}>
+        <h1 className="text-4xl font-bold mb-6 md:mb-10 text-center md:text-left">
+          Rail Defect App
         </h1>
-        <p className="text-2xl md:text-3xl font-semibold leading-snug mb-4 md:mb-6 text-gray-800 dark:text-gray-200 text-center md:text-left">
+        <p className={`text-2xl md:text-3xl font-semibold leading-snug mb-4 md:mb-6 text-center md:text-left ${isDark ? "text-gray-200" : "text-gray-800"}`}>
           Précision. Sécurité. Innovation.
         </p>
-        <p className="text-base md:text-lg text-gray-600 dark:text-gray-300 text-center md:text-left">
+        <p className={`text-base md:text-lg text-center md:text-left ${isDark ? "text-gray-300" : "text-gray-600"}`}>
           Grâce à l'intelligence artificielle, notre système détecte automatiquement les défauts des rails
           avec une précision inégalée, améliorant la sécurité ferroviaire tout en réduisant les coûts d'inspection.
         </p>
-
-        <button
-          onClick={toggleTheme}
-          className="mt-6 md:mt-10 self-center md:self-start bg-gray-200 dark:bg-gray-600 text-sm px-4 py-2 rounded hover:bg-gray-300 dark:hover:bg-gray-500 transition"
-        >
-          {theme === 'dark' ? '☀️ Mode clair' : '🌙 Mode sombre'}
-        </button>
       </div>
 
       {/* Colonne droite */}
-      <div className="w-full md:w-1/2 flex items-center justify-center bg-white dark:bg-gray-900 p-8">
+      <div className={`w-full md:w-1/2 flex items-center justify-center p-8 ${isDark ? "bg-gray-900" : "bg-white"}`}>
         <form
           onSubmit={handleSubmit}
-          className="w-full max-w-sm bg-white p-6 rounded shadow dark:bg-gray-800"
+          className={`w-full max-w-sm p-6 rounded-lg shadow-md ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"} border`}
         >
           <h2 className="text-2xl font-bold mb-6 text-center">Connexion</h2>
 
-          <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className={`block mb-1 text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
             Email
           </label>
           <input
@@ -58,11 +80,11 @@ const LoginPage = () => {
             placeholder="email@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-2 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 mb-4"
+            className={`w-full px-4 py-2 border rounded-md mb-4 ${isDark ? "bg-gray-700 border-gray-600 focus:border-blue-500" : "bg-white border-gray-300 focus:border-blue-500"} focus:ring-1 focus:ring-blue-500 focus:outline-none transition`}
             required
           />
 
-          <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className={`block mb-1 text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
             Mot de passe
           </label>
           <input
@@ -70,20 +92,29 @@ const LoginPage = () => {
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-2 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 mb-4"
+            className={`w-full px-4 py-2 border rounded-md mb-4 ${isDark ? "bg-gray-700 border-gray-600 focus:border-blue-500" : "bg-white border-gray-300 focus:border-blue-500"} focus:ring-1 focus:ring-blue-500 focus:outline-none transition`}
             required
           />
 
-          <div className="mb-4 flex items-center">
-            <input type="checkbox" id="remember" className="mr-2" />
-            <label htmlFor="remember" className="text-sm text-gray-700 dark:text-gray-300">
-              Se souvenir de moi
-            </label>
+          <div className="mb-6 flex items-center justify-between">
+            <div className="flex items-center">
+              <input 
+                type="checkbox" 
+                id="remember" 
+                className={`rounded ${isDark ? "bg-gray-700 border-gray-600" : "bg-white border-gray-300"} focus:ring-blue-500`}
+              />
+              <label htmlFor="remember" className={`ml-2 text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                Se souvenir de moi
+              </label>
+            </div>
+            <a href="#" className={`text-sm ${isDark ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-800"}`}>
+              Mot de passe oublié ?
+            </a>
           </div>
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+            className={`w-full py-2.5 rounded-md transition ${isDark ? "bg-blue-700 hover:bg-blue-600" : "bg-blue-600 hover:bg-blue-700"} text-white font-medium`}
           >
             Se connecter
           </button>
