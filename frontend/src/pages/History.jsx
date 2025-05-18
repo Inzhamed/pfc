@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
+
+
 const sampleData = [
   {
     id: "D-2023-001",
@@ -135,18 +137,7 @@ export default function History() {
               </div>
               <h2 className="text-2xl font-bold">Historique des Défauts</h2>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className={isDark ? "hover:bg-gray-700" : "hover:bg-gray-100"}
-            >
-              {isDark ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </Button>
+            
           </div>
         </div>
 
