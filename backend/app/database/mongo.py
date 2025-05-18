@@ -1,17 +1,10 @@
 from motor.motor_asyncio import AsyncIOMotorClient
-from pymongo.server_api import ServerApi
-import os
-from dotenv import load_dotenv
+from app.config import MONGODB_URL
 
-# Charger les variables d'environnement
-load_dotenv()
+# Initialise le client MongoDB asynchrone
+client = AsyncIOMotorClient(MONGODB_URL)
 
-# Récupérer l'URL depuis le fichier .env
-MONGODB_URL = os.getenv("MONGODB_URL")
+db = client["pfc-rail"]  # Nom de la base de données (tu peux le changer)
+defauts_collection = db["defauts"]  # Nom de la collection
 
-# Initialiser le client MongoDB
-client = AsyncIOMotorClient(MONGODB_URL, server_api=ServerApi('1'))
-
-# Sélectionner la base de données
-db = client["pfc-rail"]  # Tu peux changer le nom si tu veux
-defauts_collection = db["defauts"]  # Nom de la collection pour les défauts
+# Ce module sera utilisé dans les routes pour accéder à la DB

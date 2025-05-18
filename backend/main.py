@@ -1,17 +1,24 @@
+# 📁 backend/main.py
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes.defauts import router as defaut_router
+from app.routes import defauts  # importe ton fichier de routes
 
 app = FastAPI()
 
-# Autoriser le frontend à accéder à l’API (important !)
+# Middleware CORS (pour autoriser les requêtes cross-origin si besoin)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Tu peux spécifier "http://localhost:5173" pour plus de sécurité
+    allow_origins=["*"],  # autoriser tous les domaines pour l'instant
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Inclure les routes
-app.include_router(defaut_router)
+# Inclusion des routes des défauts
+app.include_router(defauts.router)
+
+# Route racine (facultative)
+@app.get("/")
+def read_root():
+    return {"message": "Bienvenue sur l'API Rail Defauts"}
