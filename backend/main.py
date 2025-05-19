@@ -1,24 +1,34 @@
-# 📁 backend/main.py
+# backend/main.py
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import defauts  # importe ton fichier de routes
+from fastapi.staticfiles import StaticFiles
 
-app = FastAPI()
+from app.routes import defauts, upload
 
-# Middleware CORS (pour autoriser les requêtes cross-origin si besoin)
+app = FastAPI(
+    title="Rail Defect Detection API",
+    description="Backend API for managing and predicting rail defects.",
+    version="1.0.0"
+)
+
+# CORS Middleware (utile si le frontend tourne sur un autre domaine ou port)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # autoriser tous les domaines pour l'instant
+    allow_origins=["*"],  # En production, restreindre aux domaines autorisés
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Inclusion des routes des défauts
-app.include_router(defauts.router)
+# Montre les fichiers statiques (pour accéder aux images uploadées)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
-# Route racine (facultative)
+# Inclusion des routes
+app.include_router(defauts.router, tags=["Défauts"])
+app.include_router(upload.router, tags=["Upload"])
+
+# Optionnel : une route de test
 @app.get("/")
 def read_root():
-    return {"message": "Bienvenue sur l'API Rail Defauts"}
+    return {"message": "API Rail Defect Detection en fonctionnement"}

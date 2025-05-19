@@ -3,10 +3,10 @@ from typing import Optional
 from datetime import datetime
 
 class Defaut(BaseModel):
-    image_url: str = Field(..., description="URL de l'image")
+    image_url: Optional[str] = Field(None, description="URL de l'image")
     latitude: float = Field(..., description="Latitude du défaut")
     longitude: float = Field(..., description="Longitude du défaut")
-    type_defaut: str = Field(..., description="Type du défaut (ex: joint, squad, ssquad)")
+    type_defaut: str = Field(..., description="Type du défaut (joint, squad, ssquad)")
     niveau_defaut: str = Field(..., description="Niveau du défaut (critique, modéré, mineur)")
     description: Optional[str] = Field(None, description="Description du défaut")
     date: datetime = Field(default_factory=datetime.utcnow, description="Date de la détection")
@@ -26,3 +26,6 @@ class Defaut(BaseModel):
                 "region": "Alger"
             }
         }
+
+class DefautUpdate(BaseModel):
+    statut: str = Field(..., description="Nouveau statut du défaut (résolu / non résolu)")
