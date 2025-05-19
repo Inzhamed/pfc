@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from "react"
 import html2pdf from "html2pdf.js"
 import { Input } from "../components/ui/input"
 import { Button } from "../components/ui/button"
+import { useToast } from "../hooks/use-toast"
 import {
   ClipboardList,
   User,
@@ -17,8 +18,8 @@ import {
   Printer,
   Train,
   AlertTriangle,
+  Loader2,
 } from "lucide-react"
-
 
 export default function Reports() {
   const today = new Date().toISOString().split("T")[0]
@@ -26,12 +27,14 @@ export default function Reports() {
   const [isClient, setIsClient] = useState(false)
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
   const [isDark, setIsDark] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const { toast } = useToast()
 
   useEffect(() => {
     setIsClient(true)
     // Vérifier le thème au montage
     setIsDark(document.documentElement.classList.contains("dark"))
-    
+
     // Observer les changements de classe sur l'élément html
     const observer = new MutationObserver(() => {
       setIsDark(document.documentElement.classList.contains("dark"))
@@ -39,7 +42,7 @@ export default function Reports() {
 
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['class']
+      attributeFilter: ["class"],
     })
 
     return () => observer.disconnect()
@@ -218,6 +221,89 @@ export default function Reports() {
     }
   }
 
+  const handleSubmitReport = async () => {
+    try {
+      setIsSubmitting(true)
+
+      // Récupérer les valeurs du formulaire
+      const technicianName = document.getElementById("technician-name")?.value
+      const technicianId = document.getElementById("technician-id")?.value
+      const technicianRole = document.getElementById("technician-role")?.value
+      const reportDate = document.getElementById("report-date")?.value || today
+      const location = document.getElementById("location")?.value
+      const line = document.getElementById("line")?.value
+      const pk = document.getElementById("pk")?.value
+      const defectType = document.getElementById("defect-type")?.value
+      const description = document.getElementById("description")?.value
+      const action = document.getElementById("action")?.value
+
+      // Vérifier les champs obligatoires
+      if (!technicianName || !technicianId || !defectType || !action) {
+        toast({
+          title: "Champs manquants",
+          description: "Veuillez remplir tous les champs obligatoires",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Préparer les données pour l'API
+      const reportData = {
+        id: `D-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000)
+          .toString()
+          .padStart(3, "0")}`,
+        type: defectType.toLowerCase(),
+        status: action.toLowerCase(),
+        date: reportDate,
+        line: line,
+        description: description,
+        technician: {
+          name: technicianName,
+          matricule: technicianId,
+          function: technicianRole,
+          interventionDate: reportDate,
+        },
+        location: {
+          pk: pk,
+          lat: 36.7654, // Valeurs par défaut, à remplacer par des valeurs réelles si disponibles
+          lng: 3.0567,
+        },
+      }
+
+      // Envoyer les données à l'API
+      const response = await fetch("http://localhost:8000/api/reports", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(reportData),
+      })
+
+      if (!response.ok) {
+        throw new Error("Erreur lors de l'enregistrement du rapport")
+      }
+
+      // Afficher un message de succès
+      toast({
+        title: "Rapport enregistré",
+        description: "Le rapport a été enregistré avec succès dans l'historique",
+        variant: "default",
+      })
+
+      // Réinitialiser le formulaire (optionnel)
+      // document.getElementById("report-form").reset()
+    } catch (error) {
+      console.error("Erreur lors de l'enregistrement du rapport:", error)
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'enregistrement du rapport",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <div className={`min-h-screen ${isDark ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-800"}`}>
       <div className="max-w-4xl mx-auto py-8 px-4">
@@ -241,9 +327,9 @@ export default function Reports() {
                 <FileDown className="w-4 h-4" />
                 <span className="hidden sm:inline">{isGeneratingPDF ? "Génération..." : "Générer PDF"}</span>
               </Button>
-              <Button 
-                variant="outline" 
-                onClick={handlePrint} 
+              <Button
+                variant="outline"
+                onClick={handlePrint}
                 className={`flex items-center gap-2 ${isDark ? "border-gray-600 hover:bg-gray-700" : "border-blue-200 hover:bg-blue-50"}`}
               >
                 <Printer className="w-4 h-4" />
@@ -271,14 +357,12 @@ export default function Reports() {
             </div>
 
             <h1
-              className={`text-2xl md:text-3xl font-bold text-center mb-8 ${
-                isDark ? "text-white" : "text-[#0a3172]"
-              }`}
+              className={`text-2xl md:text-3xl font-bold text-center mb-8 ${isDark ? "text-white" : "text-[#0a3172]"}`}
             >
               Rapport d'intervention
             </h1>
 
-            <form className="space-y-6">
+            <form id="report-form" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label
@@ -365,9 +449,7 @@ export default function Reports() {
                 <select
                   id="line"
                   className={`w-full p-3 rounded-md border-2 ${
-                    isDark
-                      ? "bg-gray-700 border-gray-700 text-white"
-                      : "bg-white border-blue-100 focus:border-blue-300"
+                    isDark ? "bg-gray-700 border-gray-700 text-white" : "bg-white border-blue-100 focus:border-blue-300"
                   }`}
                   defaultValue=""
                 >
@@ -406,18 +488,16 @@ export default function Reports() {
                 <select
                   id="defect-type"
                   className={`w-full p-3 rounded-md border-2 ${
-                    isDark
-                      ? "bg-gray-700 border-gray-700 text-white"
-                      : "bg-white border-blue-100 focus:border-blue-300"
+                    isDark ? "bg-gray-700 border-gray-700 text-white" : "bg-white border-blue-100 focus:border-blue-300"
                   }`}
                   defaultValue=""
                 >
                   <option value="" disabled>
                     Choisir un type de défaut...
                   </option>
-                  <option value="Joint">Joint</option>
-                  <option value="Squat">Squat</option>
-                  <option value="Ssquat">SSquat</option>
+                  <option value="joint">Joint</option>
+                  <option value="squat">Squat</option>
+                  <option value="ssquat">SSquat</option>
                 </select>
               </div>
 
@@ -432,9 +512,7 @@ export default function Reports() {
                 <textarea
                   id="description"
                   className={`w-full p-3 rounded-md border-2 ${
-                    isDark
-                      ? "bg-gray-700 border-gray-700 text-white"
-                      : "bg-white border-blue-100 focus:border-blue-300"
+                    isDark ? "bg-gray-700 border-gray-700 text-white" : "bg-white border-blue-100 focus:border-blue-300"
                   }`}
                   placeholder="Décris ce qui a été fait ou observé..."
                   rows={4}
@@ -452,18 +530,16 @@ export default function Reports() {
                 <select
                   id="action"
                   className={`w-full p-3 rounded-md border-2 ${
-                    isDark
-                      ? "bg-gray-700 border-gray-700 text-white"
-                      : "bg-white border-blue-100 focus:border-blue-300"
+                    isDark ? "bg-gray-700 border-gray-700 text-white" : "bg-white border-blue-100 focus:border-blue-300"
                   }`}
                   defaultValue=""
                 >
                   <option value="" disabled>
                     Choisir une action...
                   </option>
-                  <option value="Réparé">Réparé</option>
-                  <option value="Reporté">Reporté</option>
-                  <option value="Non réparable">Non réparable</option>
+                  <option value="réparé">Réparé</option>
+                  <option value="reporté">Reporté</option>
+                  <option value="non réparable">Non réparable</option>
                 </select>
               </div>
 
@@ -488,11 +564,17 @@ export default function Reports() {
         <div className="mt-8 flex justify-center">
           <Button
             className={`px-8 py-6 text-lg font-semibold ${isDark ? "bg-blue-800 hover:bg-blue-900" : "bg-[#0a3172] hover:bg-[#0a3172]/90"} text-white`}
-            onClick={() => {
-              alert("Rapport confirmé et enregistré avec succès !")
-            }}
+            onClick={handleSubmitReport}
+            disabled={isSubmitting}
           >
-            Confirmer le rapport
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Enregistrement...
+              </>
+            ) : (
+              "Confirmer le rapport"
+            )}
           </Button>
         </div>
         {/* Pied de page */}
@@ -502,5 +584,4 @@ export default function Reports() {
       </div>
     </div>
   )
-  
 }
