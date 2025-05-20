@@ -336,31 +336,7 @@ export default function History() {
                               {selectedItem.location.pk}
                             </p>
                           </div>
-                          <div>
-                            <p className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"} mb-1`}>
-                              Image du défaut
-                            </p>
-                            {selectedItem.imageUrl ? (
-                              <div className="mt-2">
-                                <img
-                                  src={selectedItem.imageUrl || "/placeholder.svg"}
-                                  alt="Image du défaut"
-                                  className="rounded-md border max-h-40 object-cover"
-                                />
-                                <Button
-                                  onClick={() => window.open(selectedItem.imageUrl, "_blank")}
-                                  variant="link"
-                                  className="text-xs p-0 mt-1 h-auto"
-                                >
-                                  Voir en grand
-                                </Button>
-                              </div>
-                            ) : (
-                              <p className={`text-xs italic ${isDark ? "text-gray-500" : "text-gray-400"}`}>
-                                Aucune image disponible
-                              </p>
-                            )}
-                          </div>
+                         
                           <Button
                             onClick={() => viewOnMap(selectedItem)}
                             className={`w-full mt-2 text-xs h-8 ${isDark ? "bg-blue-800 hover:bg-blue-900" : "bg-blue-600 hover:bg-blue-700"} text-white`}
