@@ -1,18 +1,43 @@
 import React, { useState } from 'react';
-import LoginForm from '../components/ui/LoginForm';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@/components/theme-provider';
+import axios from 'axios';
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Tentative de connexion:', { email, password });
-    navigate('/dashboard');
+    setErrorMessage(''); // reset message
+
+    try {
+      const response = await axios.post("http://127.0.0.1:8000/api/techniciens/login", {
+        email,
+        password
+      });
+
+      console.log("Réponse backend :", response.data);
+
+      // Si réponse ok : rediriger vers dashboard
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Erreur de connexion :", error);
+
+      if (error.response) {
+        if (error.response.status === 401) {
+          setErrorMessage("Email ou mot de passe incorrect.");
+        } else {
+          setErrorMessage("Erreur serveur. Veuillez réessayer.");
+        }
+      } else {
+        setErrorMessage("Impossible de se connecter au serveur.");
+      }
+    }
   };
 
   const toggleTheme = () => {
@@ -50,6 +75,12 @@ const LoginPage = () => {
         >
           <h2 className="text-2xl font-bold mb-6 text-center">Connexion</h2>
 
+          {errorMessage && (
+            <div className="mb-4 text-sm text-red-600 bg-red-100 dark:bg-red-800 dark:text-red-100 p-2 rounded">
+              {errorMessage}
+            </div>
+          )}
+
           <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
             Email
           </label>
@@ -73,13 +104,6 @@ const LoginPage = () => {
             className="w-full px-4 py-2 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 mb-4"
             required
           />
-
-          <div className="mb-4 flex items-center">
-            <input type="checkbox" id="remember" className="mr-2" />
-            <label htmlFor="remember" className="text-sm text-gray-700 dark:text-gray-300">
-              Se souvenir de moi
-            </label>
-          </div>
 
           <button
             type="submit"
