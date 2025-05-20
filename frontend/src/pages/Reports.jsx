@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import html2pdf from "html2pdf.js"
 import { Input } from "../components/ui/input"
 import { Button } from "../components/ui/button"
@@ -13,13 +14,55 @@ import {
   MapPin,
   FileText,
   CheckCircle,
-  ImageIcon,
   FileDown,
   Printer,
   Train,
   AlertTriangle,
   Loader2,
+  History,
 } from "lucide-react"
+
+// Composant pour un champ de formulaire
+const FormField = ({ id, label, icon, type = "text", options, placeholder, isDark, isSubmitted }) => {
+  const isSelect = type === "select"
+  const InputComponent = isSelect ? "select" : type === "textarea" ? "textarea" : Input
+  const props = {
+    id,
+    disabled: isSubmitted,
+    ...(type === "textarea" ? { rows: 4 } : {}),
+    ...(type === "date" ? { type: "date" } : {}),
+    ...(type !== "select" && type !== "textarea" ? { placeholder } : {}),
+    className: `${isSelect || type === "textarea" ? "w-full p-3 rounded-md" : ""} border-2 ${
+      isDark ? "border-gray-700 bg-gray-700 text-white" : "border-blue-100 focus:border-blue-300 bg-white"
+    }`,
+  }
+
+  return (
+    <div className="space-y-2">
+      <label
+        htmlFor={id}
+        className={`font-medium flex gap-2 items-center ${isDark ? "text-gray-200" : "text-gray-700"}`}
+      >
+        {icon}
+        {label}
+      </label>
+      {isSelect ? (
+        <select {...props} defaultValue="">
+          <option value="" disabled>
+            {placeholder}
+          </option>
+          {options?.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <InputComponent {...props} />
+      )}
+    </div>
+  )
+}
 
 export default function Reports() {
   const today = new Date().toISOString().split("T")[0]
@@ -28,22 +71,115 @@ export default function Reports() {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
   const [isDark, setIsDark] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [defectData, setDefectData] = useState(null)
   const { toast } = useToast()
+  const navigate = useNavigate()
+
+  // Définition des champs du formulaire
+  const formFields = [
+    {
+      id: "technician-name",
+      label: "Nom du technicien",
+      icon: <User className="w-4 h-4" />,
+      placeholder: "Ex: Bouchra Amari",
+    },
+    { id: "technician-id", label: "Matricule", icon: <BadgeCheck className="w-4 h-4" />, placeholder: "Ex: TECH-4092" },
+    {
+      id: "technician-role",
+      label: "Fonction",
+      icon: <User className="w-4 h-4" />,
+      placeholder: "Ex: Technicienne d'inspection",
+    },
+    { id: "report-date", label: "Date", icon: <CalendarDays className="w-4 h-4" />, type: "date", defaultValue: today },
+    {
+      id: "location",
+      label: "Localisation du défaut",
+      icon: <MapPin className="w-4 h-4" />,
+      placeholder: "Ex : Voie 3 - KM 47.3",
+    },
+    {
+      id: "line",
+      label: "Ligne ferroviaire",
+      icon: <Train className="w-4 h-4" />,
+      type: "select",
+      placeholder: "Choisir une ligne...",
+      options: [
+        { value: "ALGER-ORAN", label: "ALGER-ORAN" },
+        { value: "ALGER-CONSTANTINE", label: "ALGER-CONSTANTINE" },
+        { value: "ORAN-BEJAIA", label: "ORAN-BEJAIA" },
+      ],
+    },
+    { id: "pk", label: "Point Kilométrique (PK)", icon: <MapPin className="w-4 h-4" />, placeholder: "Ex: PK 15+780" },
+    {
+      id: "defect-type",
+      label: "Type de défaut",
+      icon: <AlertTriangle className="w-4 h-4" />,
+      type: "select",
+      placeholder: "Choisir un type de défaut...",
+      options: [
+        { value: "joint", label: "Joint" },
+        { value: "squat", label: "Squat" },
+        { value: "ssquat", label: "SSquat" },
+      ],
+    },
+    {
+      id: "description",
+      label: "Description",
+      icon: <FileText className="w-4 h-4" />,
+      type: "textarea",
+      placeholder: "Décris ce qui a été fait ou observé...",
+    },
+    {
+      id: "action",
+      label: "Action réalisée",
+      icon: <CheckCircle className="w-4 h-4" />,
+      type: "select",
+      placeholder: "Choisir une action...",
+      options: [
+        { value: "réparé", label: "Réparé" },
+        { value: "reporté", label: "Reporté" },
+        { value: "non réparable", label: "Non réparable" },
+      ],
+    },
+  ]
 
   useEffect(() => {
     setIsClient(true)
-    // Vérifier le thème au montage
     setIsDark(document.documentElement.classList.contains("dark"))
 
-    // Observer les changements de classe sur l'élément html
+    // Observer les changements de thème
     const observer = new MutationObserver(() => {
       setIsDark(document.documentElement.classList.contains("dark"))
     })
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] })
 
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    })
+    // Récupérer et traiter les données du défaut
+    const storedDefectData = localStorage.getItem("defectData")
+    if (storedDefectData) {
+      const parsedData = JSON.parse(storedDefectData)
+      setDefectData(parsedData)
+
+      // Pré-remplir le formulaire
+      setTimeout(() => {
+        if (parsedData) {
+          const fieldMap = {
+            location: parsedData.location?.pk || "",
+            line: parsedData.line || "",
+            pk: parsedData.location?.pk || "",
+            "defect-type": parsedData.type || "",
+            description: parsedData.description || "",
+          }
+
+          Object.entries(fieldMap).forEach(([id, value]) => {
+            const element = document.getElementById(id)
+            if (element) element.value = value
+          })
+        }
+      }, 500)
+
+      localStorage.removeItem("defectData")
+    }
 
     return () => observer.disconnect()
   }, [])
@@ -78,140 +214,81 @@ export default function Reports() {
 
   const handleGeneratePDF = async () => {
     if (!reportRef.current || isGeneratingPDF) return
-
     try {
       setIsGeneratingPDF(true)
 
-      // Créer un nouveau div pour le PDF avec une mise en page optimisée
+      // Créer le contenu du PDF
       const pdfContainer = document.createElement("div")
-      pdfContainer.style.width = "210mm"
-      pdfContainer.style.padding = "15mm"
-      pdfContainer.style.backgroundColor = "white"
-      pdfContainer.style.color = "#333"
-      pdfContainer.style.fontFamily = "Arial, sans-serif"
+      Object.assign(pdfContainer.style, {
+        width: "210mm",
+        padding: "15mm",
+        backgroundColor: "white",
+        color: "#333",
+        fontFamily: "Arial, sans-serif",
+      })
 
-      // Créer le contenu du PDF avec une mise en page améliorée
+      // En-tête du PDF
       pdfContainer.innerHTML = `
-      <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #0a3172; padding-bottom: 15px;">
-        <h1 style="font-size: 26px; color: #0a3172; margin: 0;">SNTF - Rapport de Panne</h1>
-        <p style="color: #666; margin-top: 5px;">Système de Détection des Défauts de Rails</p>
-      </div>
-      
-      <div style="display: flex; justify-content: space-between; margin-bottom: 25px;">
-        <div style="width: 48%;">
-          <div style="margin-bottom: 20px;">
-            <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Nom du technicien</p>
-            <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${
-              document.getElementById("technician-name")?.value || "Non spécifié"
-            }</p>
+        <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #0a3172; padding-bottom: 15px;">
+          <h1 style="font-size: 26px; color: #0a3172; margin: 0;">SNTF - Rapport de Panne</h1>
+          <p style="color: #666; margin-top: 5px;">Système de Détection des Défauts de Rails</p>
+        </div>
+      `
+
+      // Fonction pour ajouter un champ au PDF
+      const addField = (label, value) => `
+        <div style="margin-bottom: 20px;">
+          <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">${label}</p>
+          <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${value || "Non spécifié"}</p>
+        </div>
+      `
+
+      // Ajouter les informations du technicien
+      pdfContainer.innerHTML += `
+        <div style="display: flex; justify-content: space-between; margin-bottom: 25px;">
+          <div style="width: 48%;">
+            ${addField("Nom du technicien", document.getElementById("technician-name")?.value)}
+            ${addField("Fonction", document.getElementById("technician-role")?.value)}
           </div>
-          
-          <div style="margin-bottom: 20px;">
-            <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Fonction</p>
-            <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${
-              document.getElementById("technician-role")?.value || "Non spécifié"
-            }</p>
+          <div style="width: 48%;">
+            ${addField("Matricule", document.getElementById("technician-id")?.value)}
+            ${addField("Date", document.getElementById("report-date")?.value || today)}
           </div>
         </div>
-        
-        <div style="width: 48%;">
-          <div style="margin-bottom: 20px;">
-            <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Matricule</p>
-            <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${
-              document.getElementById("technician-id")?.value || "Non spécifié"
-            }</p>
-          </div>
-          
-          <div style="margin-bottom: 20px;">
-            <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Date</p>
-            <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${
-              document.getElementById("report-date")?.value || today
-            }</p>
-          </div>
+      `
+
+      // Ajouter les détails du défaut
+      const fields = [
+        { label: "Localisation du défaut", id: "location" },
+        { label: "Ligne ferroviaire", id: "line" },
+        { label: "Point Kilométrique (PK)", id: "pk" },
+        { label: "Type de défaut", id: "defect-type" },
+        { label: "Description", id: "description" },
+        { label: "Action réalisée", id: "action" },
+      ]
+
+      fields.forEach((field) => {
+        pdfContainer.innerHTML += addField(field.label, document.getElementById(field.id)?.value)
+      })
+
+      // Pied de page
+      pdfContainer.innerHTML += `
+        <div style="margin-top: 40px; border-top: 1px solid #ddd; padding-top: 20px; text-align: center; color: #666; font-size: 12px;">
+          <p>SNTF - Système de Détection des Défauts de Rails</p>
+          <p>Document généré le ${new Date().toLocaleDateString("fr-FR")} à ${new Date().toLocaleTimeString("fr-FR")}</p>
         </div>
-      </div>
-      
-      <div style="margin-bottom: 20px;">
-        <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Localisation du défaut</p>
-        <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${
-          document.getElementById("location")?.value || "Non spécifié"
-        }</p>
-      </div>
-      
-      <div style="margin-bottom: 20px;">
-        <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Ligne ferroviaire</p>
-        <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${
-          document.getElementById("line")?.value || "Non spécifié"
-        }</p>
-      </div>
-      
-      <div style="margin-bottom: 20px;">
-        <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Point Kilométrique (PK)</p>
-        <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${
-          document.getElementById("pk")?.value || "Non spécifié"
-        }</p>
-      </div>
-      
-      <div style="margin-bottom: 20px;">
-        <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Type de défaut</p>
-        <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${
-          document.getElementById("defect-type")?.value || "Non spécifié"
-        }</p>
-      </div>
-      
-      <div style="margin-bottom: 20px;">
-        <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Description</p>
-        <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9; min-height: 80px;">${
-          document.getElementById("description")?.value || "Non spécifié"
-        }</p>
-      </div>
-      
-      <div style="margin-bottom: 20px;">
-        <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Action réalisée</p>
-        <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">${
-          document.getElementById("action")?.value || "Non spécifié"
-        }</p>
-      </div>
-      
-      ${
-        document.getElementById("image")?.files?.length > 0
-          ? `
-          <div style="margin-bottom: 20px;">
-            <p style="font-weight: bold; margin-bottom: 8px; color: #0a3172;">Image jointe</p>
-            <p style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">
-              Image disponible dans le rapport original
-            </p>
-          </div>
-          `
-          : ""
-      }
-      
-      <div style="margin-top: 40px; border-top: 1px solid #ddd; padding-top: 20px; text-align: center; color: #666; font-size: 12px;">
-        <p>SNTF - Système de Détection des Défauts de Rails</p>
-        <p>Document généré le ${new Date().toLocaleDateString("fr-FR")} à ${new Date().toLocaleTimeString("fr-FR")}</p>
-      </div>
-    `
+      `
 
       // Options pour html2pdf
       const opt = {
         margin: [10, 10, 10, 10],
         filename: `SNTF-Rapport-Panne-${today}.pdf`,
         image: { type: "jpeg", quality: 1 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          letterRendering: true,
-        },
-        jsPDF: {
-          unit: "mm",
-          format: "a4",
-          orientation: "portrait",
-          compress: true,
-        },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait", compress: true },
         pagebreak: { mode: "avoid-all" },
       }
 
-      // Générer le PDF
       await html2pdf().from(pdfContainer).set(opt).save()
     } catch (error) {
       console.error("Erreur lors de la génération du PDF:", error)
@@ -222,66 +299,70 @@ export default function Reports() {
   }
 
   const handleSubmitReport = async () => {
+    // Si le rapport a déjà été soumis, rediriger vers l'historique
+    if (isSubmitted) {
+      navigate("/history")
+      return
+    }
+
+    // Si le rapport est en cours de soumission, ne rien faire
+    if (isSubmitting) return
+
     try {
       setIsSubmitting(true)
 
       // Récupérer les valeurs du formulaire
-      const technicianName = document.getElementById("technician-name")?.value
-      const technicianId = document.getElementById("technician-id")?.value
-      const technicianRole = document.getElementById("technician-role")?.value
-      const reportDate = document.getElementById("report-date")?.value || today
-      const location = document.getElementById("location")?.value
-      const line = document.getElementById("line")?.value
-      const pk = document.getElementById("pk")?.value
-      const defectType = document.getElementById("defect-type")?.value
-      const description = document.getElementById("description")?.value
-      const action = document.getElementById("action")?.value
+      const getFieldValue = (id) => document.getElementById(id)?.value
+      const requiredFields = ["technician-name", "technician-id", "defect-type", "action"]
 
       // Vérifier les champs obligatoires
-      if (!technicianName || !technicianId || !defectType || !action) {
+      const missingFields = requiredFields.filter((id) => !getFieldValue(id))
+      if (missingFields.length > 0) {
         toast({
           title: "Champs manquants",
           description: "Veuillez remplir tous les champs obligatoires",
           variant: "destructive",
         })
+        setIsSubmitting(false)
         return
       }
 
       // Préparer les données pour l'API
       const reportData = {
-        id: `D-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000)
-          .toString()
-          .padStart(3, "0")}`,
-        type: defectType.toLowerCase(),
-        status: action.toLowerCase(),
-        date: reportDate,
-        line: line,
-        description: description,
+        id:
+          defectData?.id ||
+          `D-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000)
+            .toString()
+            .padStart(3, "0")}`,
+        type: getFieldValue("defect-type").toLowerCase(),
+        status: getFieldValue("action").toLowerCase(),
+        date: getFieldValue("report-date") || today,
+        line: getFieldValue("line"),
+        description: getFieldValue("description"),
         technician: {
-          name: technicianName,
-          matricule: technicianId,
-          function: technicianRole,
-          interventionDate: reportDate,
+          name: getFieldValue("technician-name"),
+          matricule: getFieldValue("technician-id"),
+          function: getFieldValue("technician-role"),
+          interventionDate: getFieldValue("report-date") || today,
         },
         location: {
-          pk: pk,
-          lat: 36.7654, // Valeurs par défaut, à remplacer par des valeurs réelles si disponibles
-          lng: 3.0567,
+          pk: getFieldValue("pk"),
+          lat: defectData?.location?.lat || 36.7654,
+          lng: defectData?.location?.lng || 3.0567,
         },
       }
 
       // Envoyer les données à l'API
       const response = await fetch("http://localhost:8000/api/reports", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(reportData),
       })
 
-      if (!response.ok) {
-        throw new Error("Erreur lors de l'enregistrement du rapport")
-      }
+      if (!response.ok) throw new Error("Erreur lors de l'enregistrement du rapport")
+
+      // Marquer le rapport comme soumis
+      setIsSubmitted(true)
 
       // Afficher un message de succès
       toast({
@@ -289,9 +370,6 @@ export default function Reports() {
         description: "Le rapport a été enregistré avec succès dans l'historique",
         variant: "default",
       })
-
-      // Réinitialiser le formulaire (optionnel)
-      // document.getElementById("report-form").reset()
     } catch (error) {
       console.error("Erreur lors de l'enregistrement du rapport:", error)
       toast({
@@ -348,9 +426,7 @@ export default function Reports() {
           >
             <div className="flex justify-center mb-6">
               <div
-                className={`inline-flex items-center justify-center p-3 rounded-full ${
-                  isDark ? "bg-blue-900/30" : "bg-blue-50"
-                }`}
+                className={`inline-flex items-center justify-center p-3 rounded-full ${isDark ? "bg-blue-900/30" : "bg-blue-50"}`}
               >
                 <ClipboardList className={`w-8 h-8 ${isDark ? "text-blue-300" : "text-[#0a3172]"}`} />
               </div>
@@ -363,204 +439,21 @@ export default function Reports() {
             </h1>
 
             <form id="report-form" className="space-y-6">
+              {/* Première section: 2 colonnes */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label
-                    htmlFor="technician-name"
-                    className={`font-medium flex gap-2 items-center ${isDark ? "text-gray-200" : "text-gray-700"}`}
-                  >
-                    <User className="w-4 h-4" />
-                    Nom du technicien
-                  </label>
-                  <Input
-                    id="technician-name"
-                    placeholder="Ex: Bouchra Amari"
-                    className={`border-2 ${isDark ? "border-gray-700 bg-gray-700 text-white" : "border-blue-100 focus:border-blue-300 bg-white"}`}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="technician-id"
-                    className={`font-medium flex gap-2 items-center ${isDark ? "text-gray-200" : "text-gray-700"}`}
-                  >
-                    <BadgeCheck className="w-4 h-4" />
-                    Matricule
-                  </label>
-                  <Input
-                    id="technician-id"
-                    placeholder="Ex: TECH-4092"
-                    className={`border-2 ${isDark ? "border-gray-700 bg-gray-700 text-white" : "border-blue-100 focus:border-blue-300 bg-white"}`}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="technician-role"
-                    className={`font-medium flex gap-2 items-center ${isDark ? "text-gray-200" : "text-gray-700"}`}
-                  >
-                    <User className="w-4 h-4" />
-                    Fonction
-                  </label>
-                  <Input
-                    id="technician-role"
-                    placeholder="Ex: Technicienne d'inspection"
-                    className={`border-2 ${isDark ? "border-gray-700 bg-gray-700 text-white" : "border-blue-100 focus:border-blue-300 bg-white"}`}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="report-date"
-                    className={`font-medium flex gap-2 items-center ${isDark ? "text-gray-200" : "text-gray-700"}`}
-                  >
-                    <CalendarDays className="w-4 h-4" />
-                    Date
-                  </label>
-                  <Input
-                    id="report-date"
-                    type="date"
-                    defaultValue={today}
-                    className={`border-2 ${isDark ? "border-gray-700 bg-gray-700 text-white" : "border-blue-100 focus:border-blue-300 bg-white"}`}
-                  />
-                </div>
+                {formFields.slice(0, 4).map((field) => (
+                  <FormField key={field.id} {...field} isDark={isDark} isSubmitted={isSubmitted} />
+                ))}
               </div>
 
-              <div className="space-y-2">
-                <label
-                  htmlFor="location"
-                  className={`font-medium flex gap-2 items-center ${isDark ? "text-gray-200" : "text-gray-700"}`}
-                >
-                  <MapPin className="w-4 h-4" />
-                  Localisation du défaut
-                </label>
-                <Input
-                  id="location"
-                  placeholder="Ex : Voie 3 - KM 47.3"
-                  className={`border-2 ${isDark ? "border-gray-700 bg-gray-700 text-white" : "border-blue-100 focus:border-blue-300 bg-white"}`}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label
-                  htmlFor="line"
-                  className={`font-medium flex gap-2 items-center ${isDark ? "text-gray-200" : "text-gray-700"}`}
-                >
-                  <Train className="w-4 h-4" />
-                  Ligne ferroviaire
-                </label>
-                <select
-                  id="line"
-                  className={`w-full p-3 rounded-md border-2 ${
-                    isDark ? "bg-gray-700 border-gray-700 text-white" : "bg-white border-blue-100 focus:border-blue-300"
-                  }`}
-                  defaultValue=""
-                >
-                  <option value="" disabled>
-                    Choisir une ligne...
-                  </option>
-                  <option value="ALGER-ORAN">ALGER-ORAN</option>
-                  <option value="ALGER-CONSTANTINE">ALGER-CONSTANTINE</option>
-                  <option value="ORAN-BEJAIA">ORAN-BEJAIA</option>
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label
-                  htmlFor="pk"
-                  className={`font-medium flex gap-2 items-center ${isDark ? "text-gray-200" : "text-gray-700"}`}
-                >
-                  <MapPin className="w-4 h-4" />
-                  Point Kilométrique (PK)
-                </label>
-                <Input
-                  id="pk"
-                  placeholder="Ex: PK 15+780"
-                  className={`border-2 ${isDark ? "border-gray-700 bg-gray-700 text-white" : "border-blue-100 focus:border-blue-300 bg-white"}`}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label
-                  htmlFor="defect-type"
-                  className={`font-medium flex gap-2 items-center ${isDark ? "text-gray-200" : "text-gray-700"}`}
-                >
-                  <AlertTriangle className="w-4 h-4" />
-                  Type de défaut
-                </label>
-                <select
-                  id="defect-type"
-                  className={`w-full p-3 rounded-md border-2 ${
-                    isDark ? "bg-gray-700 border-gray-700 text-white" : "bg-white border-blue-100 focus:border-blue-300"
-                  }`}
-                  defaultValue=""
-                >
-                  <option value="" disabled>
-                    Choisir un type de défaut...
-                  </option>
-                  <option value="joint">Joint</option>
-                  <option value="squat">Squat</option>
-                  <option value="ssquat">SSquat</option>
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label
-                  htmlFor="description"
-                  className={`font-medium flex gap-2 items-center ${isDark ? "text-gray-200" : "text-gray-700"}`}
-                >
-                  <FileText className="w-4 h-4" />
-                  Description
-                </label>
-                <textarea
-                  id="description"
-                  className={`w-full p-3 rounded-md border-2 ${
-                    isDark ? "bg-gray-700 border-gray-700 text-white" : "bg-white border-blue-100 focus:border-blue-300"
-                  }`}
-                  placeholder="Décris ce qui a été fait ou observé..."
-                  rows={4}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label
-                  htmlFor="action"
-                  className={`font-medium flex gap-2 items-center ${isDark ? "text-gray-200" : "text-gray-700"}`}
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  Action réalisée
-                </label>
-                <select
-                  id="action"
-                  className={`w-full p-3 rounded-md border-2 ${
-                    isDark ? "bg-gray-700 border-gray-700 text-white" : "bg-white border-blue-100 focus:border-blue-300"
-                  }`}
-                  defaultValue=""
-                >
-                  <option value="" disabled>
-                    Choisir une action...
-                  </option>
-                  <option value="réparé">Réparé</option>
-                  <option value="reporté">Reporté</option>
-                  <option value="non réparable">Non réparable</option>
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label
-                  htmlFor="Image"
-                  className={`font-medium flex gap-2 items-center ${isDark ? "text-gray-200" : "text-gray-700"}`}
-                >
-                  <ImageIcon className="w-4 h-4" />
-                  Image (optionnelle)
-                </label>
-                <Input
-                  id="image"
-                  type="file"
-                  accept="image/*"
-                  className={`border-2 ${isDark ? "border-gray-700 bg-gray-700" : "border-blue-100 focus:border-blue-300 bg-white"}`}
-                />
-              </div>
+              {/* Reste des champs */}
+              {formFields.slice(4).map((field) => (
+                <FormField key={field.id} {...field} isDark={isDark} isSubmitted={isSubmitted} />
+              ))}
             </form>
           </div>
         )}
+
         <div className="mt-8 flex justify-center">
           <Button
             className={`px-8 py-6 text-lg font-semibold ${isDark ? "bg-blue-800 hover:bg-blue-900" : "bg-[#0a3172] hover:bg-[#0a3172]/90"} text-white`}
@@ -572,11 +465,28 @@ export default function Reports() {
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Enregistrement...
               </>
+            ) : isSubmitted ? (
+              <>
+                <History className="mr-2 h-4 w-4" />
+                Voir l'historique
+              </>
             ) : (
               "Confirmer le rapport"
             )}
           </Button>
         </div>
+
+        {/* Message de succès */}
+        {isSubmitted && (
+          <div className="mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative dark:bg-green-900/30 dark:text-green-300 dark:border-green-800">
+            <strong className="font-bold">Succès!</strong>
+            <span className="block sm:inline">
+              {" "}
+              Votre rapport a été enregistré avec succès. Cliquez à nouveau sur le bouton pour voir l'historique.
+            </span>
+          </div>
+        )}
+
         {/* Pied de page */}
         <footer className={`mt-8 pt-4 text-center text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
           <p>© SNTF - Système de Détection des Défauts de Rails</p>

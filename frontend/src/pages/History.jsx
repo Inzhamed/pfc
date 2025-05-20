@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
+import { useNavigate } from "react-router-dom"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 import { Search, Filter, FileText, User, Clock, Loader2, AlertTriangle, MapPin } from "lucide-react"
@@ -31,6 +32,7 @@ export default function History() {
   const [selectedID, setSelectedID] = useState(null)
   const [filters, setFilters] = useState({ status: "all", search: "" })
   const { toast } = useToast()
+  const navigate = useNavigate()
 
   useEffect(() => {
     // Vérifier le thème au montage
@@ -129,7 +131,10 @@ export default function History() {
 
   const formatDate = (dateString) => format(new Date(dateString), "dd MMMM yyyy", { locale: fr })
 
-  const openMap = (lat, lng) => window.open(`https://www.google.com/maps?q=${lat},${lng}`, "_blank")
+  // Fonction pour rediriger vers le dashboard avec le défaut sélectionné
+  const viewOnMap = (defect) => {
+    navigate(`/dashboard?defectId=${defect.id}`)
+  }
 
   return (
     <div className={`min-h-screen ${isDark ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-800"}`}>
@@ -142,8 +147,6 @@ export default function History() {
               </div>
               <h2 className="text-2xl font-bold">Historique des Défauts</h2>
             </div>
-
-            
           </div>
         </div>
 
@@ -160,7 +163,6 @@ export default function History() {
             />
           </div>
           <div className="flex gap-2">
-            
             <Button
               variant="outline"
               className={`${isDark ? "border-gray-600 hover:bg-gray-700" : "border-blue-200 hover:bg-blue-50"}`}
@@ -360,7 +362,7 @@ export default function History() {
                             )}
                           </div>
                           <Button
-                            onClick={() => openMap(selectedItem.location.lat, selectedItem.location.lng)}
+                            onClick={() => viewOnMap(selectedItem)}
                             className={`w-full mt-2 text-xs h-8 ${isDark ? "bg-blue-800 hover:bg-blue-900" : "bg-blue-600 hover:bg-blue-700"} text-white`}
                             size="sm"
                           >
