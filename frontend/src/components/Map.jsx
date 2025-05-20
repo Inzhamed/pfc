@@ -60,89 +60,16 @@ export default function Map() {
     opacity: 0.9,
   };
 
-  const defauts = [
-    {
-      id: 1,
-      type: "Joint",
-      statut: "En attente",
-      date: "2025-05-01",
-      niveau: "critique",
-      localisation: "Zone A",
-      coords: [36.7408318, 3.4112183],
-    },
-    {
-      id: 2,
-      type: "Squad",
-      statut: "Résolu",
-      date: "2025-05-02",
-      niveau: "modere",
-      localisation: "Zone B",
-      coords: [36.7409917, 3.4108623],
-    },
-    {
-      id: 3,
-      type: "SSquad",
-      statut: "En attente",
-      date: "2025-05-03",
-      niveau: "mineur",
-      localisation: "Zone C",
-      coords: [36.7411218, 3.4105854],
-    },
-    {
-      id: 4,
-      type: "Joint",
-      statut: "Résolu",
-      date: "2025-05-04",
-      niveau: "critique",
-      localisation: "Zone D",
-      coords: [36.7347929, 3.343252],
-    },
-    {
-      id: 5,
-      type: "Squad",
-      statut: "En attente",
-      date: "2025-05-05",
-      niveau: "modere",
-      localisation: "Zone E",
-      coords: [36.7349185, 3.3425539],
-    },
-    {
-      id: 6,
-      type: "SSquad",
-      statut: "Résolu",
-      date: "2025-05-06",
-      niveau: "mineur",
-      localisation: "Zone F",
-      coords: [36.7350733, 3.3417762],
-    },
-    {
-      id: 7,
-      type: "Joint",
-      statut: "En attente",
-      date: "2025-05-07",
-      niveau: "critique",
-      localisation: "Zone G",
-      coords: [36.7343564, 3.3213445],
-    },
-    {
-      id: 8,
-      type: "Squad",
-      statut: "Résolu",
-      date: "2025-05-08",
-      niveau: "modere",
-      localisation: "Zone H",
-      coords: [36.7341181, 3.3204982],
-    },
-    {
-      id: 9,
-      type: "SSquad",
-      statut: "En attente",
-      date: "2025-05-09",
-      niveau: "mineur",
-      localisation: "Zone I",
-      coords: [36.7334262, 3.3163072],
-    },
-  ];
+  const [defauts, setDefauts] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:8000/defauts")
+      .then((res) => res.json())
+      .then((data) => setDefauts(data))
+      .catch((err) =>
+        console.error("Erreur lors de la récupération des défauts:", err)
+      );
+  }, []);
 
   return (
     <MapContainer
@@ -160,9 +87,9 @@ export default function Map() {
 
       {defauts.map((defaut) => (
         <Marker
-          key={defaut.id}
-          position={defaut.coords}
-          icon={icons[defaut.niveau] || icons.mineur}
+          key={defaut._id?.$oid || defaut._id}
+          position={[defaut.latitude, defaut.longitude]}
+          icon={icons[defaut.niveau_defaut] || icons.mineur}
         >
           <Popup>
             <div className="p-2 max-w-xs text-sm space-y-1 dark:text-white">
@@ -170,7 +97,7 @@ export default function Map() {
                 🔧 Type :
                 <span className="text-blue-600 dark:text-blue-300">
                   {" "}
-                  {defaut.type}
+                  {defaut.type_defaut}
                 </span>
               </p>
               <p>
@@ -178,17 +105,16 @@ export default function Map() {
                 <span className="text-muted-foreground">{defaut.date}</span>
               </p>
               <p>
-                📍 Lieu :{" "}
-                <span className="font-medium">{defaut.localisation}</span>
+                📍 Région : <span className="font-medium">{defaut.région}</span>
               </p>
               <p>
-                📊 Gravité : <GraviteBadge niveau={defaut.niveau} />
+                📊 Gravité : <GraviteBadge niveau={defaut.niveau_defaut} />
               </p>
               <p>
                 🔁 Statut :
                 <span
                   className={`px-2 py-1 rounded-full text-xs ${
-                    defaut.statut === "Résolu"
+                    defaut.statut === "résolu"
                       ? "bg-green-200 text-green-800 dark:bg-green-800 dark:text-white"
                       : "bg-yellow-200 text-yellow-800 dark:bg-yellow-800 dark:text-white"
                   }`}
