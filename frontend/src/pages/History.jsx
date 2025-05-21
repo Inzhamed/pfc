@@ -57,12 +57,25 @@ export default function History() {
   const fetchReports = async () => {
     setLoading(true)
     try {
+      // D'abord, essayer de charger depuis le localStorage
+      const localReports = JSON.parse(localStorage.getItem("railDefectReports") || "[]")
+      
+      if (localReports.length > 0) {
+        setData(localReports)
+        setLoading(false)
+        return
+      }
+      
+      // Si pas de données locales, essayer l'API
       const response = await fetch("http://localhost:8000/api/reports")
       if (!response.ok) {
         throw new Error("Erreur lors de la récupération des données")
       }
       const reports = await response.json()
       setData(reports)
+      
+      // Sauvegarder dans localStorage pour utilisation future
+      localStorage.setItem("railDefectReports", JSON.stringify(reports))
     } catch (error) {
       console.error("Erreur lors du chargement des rapports:", error)
       toast({
@@ -122,17 +135,33 @@ export default function History() {
         (filters.status === "all" || item.status === filters.status) &&
         (!filters.search ||
           item.id.toLowerCase().includes(filters.search.toLowerCase()) ||
-          item.technician.matricule.toLowerCase().includes(filters.search.toLowerCase()) ||
-          item.technician.name.toLowerCase().includes(filters.search.toLowerCase())),
+          (item.technician?.matricule && item.technician.matricule.toLowerCase().includes(filters.search.toLowerCase())) ||
+          (item.technician?.name && item.technician.name.toLowerCase().includes(filters.search.toLowerCase()))),
     )
   }, [data, filters])
 
   const selectedItem = useMemo(() => data.find((item) => item.id === selectedID), [data, selectedID])
 
-  const formatDate = (dateString) => format(new Date(dateString), "dd MMMM yyyy", { locale: fr })
+  const formatDate = (dateString) => {
+    try {
+      return format(new Date(dateString), "dd MMMM yyyy", { locale: fr })
+    } catch (error) {
+      return dateString
+    }
+  }
 
   // Fonction pour rediriger vers le dashboard avec le défaut sélectionné
   const viewOnMap = (defect) => {
+    // Stocker le statut du défaut pour la mise à jour sur la carte
+    localStorage.setItem(
+      "reportStatus",
+      JSON.stringify({
+        defectId: defect.id,
+        status: defect.status,
+      })
+    )
+    
+    // Rediriger vers le dashboard avec l'ID du défaut
     navigate(`/dashboard?defectId=${defect.id}`)
   }
 
@@ -199,7 +228,7 @@ export default function History() {
                     filteredData.map((item) => (
                       <TableRow key={item.id} className={isDark ? "hover:bg-gray-700" : "hover:bg-gray-50"}>
                         <TableCell className="font-mono font-medium">{item.id}</TableCell>
-                        <TableCell className="font-mono">{item.technician.matricule}</TableCell>
+                        <TableCell className="font-mono">{item.technician?.matricule || "N/A"}</TableCell>
                         <TableCell>
                           <Badge className={typeConfig[item.type]?.color || "bg-gray-100 text-gray-800"}>
                             {typeConfig[item.type]?.label || item.type}
@@ -286,26 +315,26 @@ export default function History() {
                               Nom du technicien
                             </p>
                             <p className={`text-sm ${isDark ? "text-white" : "text-gray-900"}`}>
-                              {selectedItem.technician.name}
+                              {selectedItem.technician?.name || "Non spécifié"}
                             </p>
                           </div>
                           <div>
                             <p className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"} mb-1`}>Matricule</p>
                             <p className={`text-sm font-mono ${isDark ? "text-white" : "text-gray-900"}`}>
-                              {selectedItem.technician.matricule}
+                              {selectedItem.technician?.matricule || "Non spécifié"}
                             </p>
                           </div>
                           <div>
                             <p className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"} mb-1`}>Fonction</p>
                             <p className={`text-sm ${isDark ? "text-white" : "text-gray-900"}`}>
-                              {selectedItem.technician.function}
+                              {selectedItem.technician?.function || "Non spécifié"}
                             </p>
                           </div>
                           <div>
                             <p className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"} mb-1`}>Date </p>
                             <p className={`text-sm ${isDark ? "text-white" : "text-gray-900"} flex items-center gap-2`}>
                               <Clock className="h-3 w-3" />
-                              {formatDate(selectedItem.technician.interventionDate)}
+                              {formatDate(selectedItem.technician?.interventionDate || selectedItem.date)}
                             </p>
                           </div>
                         </CardContent>
@@ -333,7 +362,7 @@ export default function History() {
                               Point kilométrique
                             </p>
                             <p className={`text-sm font-mono ${isDark ? "text-white" : "text-gray-900"}`}>
-                              {selectedItem.location.pk}
+                              {selectedItem.location?.pk || "Non spécifié"}
                             </p>
                           </div>
                          
@@ -350,44 +379,39 @@ export default function History() {
                     </div>
 
                     {/* Carte Description */}
-                    <Card className={isDark ? "bg-gray-700 border-gray-600" : "bg-white border-blue-100"}>
-                      <CardHeader className="pb-3">
-                        <h3
-                          className={`flex items-center gap-2 text-sm font-semibold ${isDark ? "text-blue-300" : "text-blue-900"}`}
-                        >
-                          <FileText className="h-4 w-4" />
-                          Description du défaut
-                        </h3>
-                      </CardHeader>
-                      <CardContent>
-                        <div
-                          className={`p-3 rounded text-sm ${isDark ? "bg-gray-600/30 text-gray-200" : "bg-gray-50 text-gray-700"}`}
-                        >
-                          {selectedItem.description ? (
-                            selectedItem.description.split("\n").map((paragraph, i) => (
-                              <p key={i} className={i > 0 ? "mt-2" : ""}>
-                                {paragraph}
-                              </p>
-                            ))
-                          ) : (
-                            <p className={`italic ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                              Aucune description disponible
-                            </p>
-                          )}
+                                        <Card className={isDark ? "bg-gray-700 border-gray-600" : "bg-white border-blue-100"}>
+                                          <CardHeader className="pb-3">
+                                            <h3
+                                              className={`flex items-center gap-2 text-sm font-semibold ${isDark ? "text-blue-300" : "text-blue-900"}`}
+                                            >
+                                              <FileText className="h-4 w-4" />
+                                              Description du défaut
+                                            </h3>
+                                          </CardHeader>
+                                          <CardContent>
+                                            <div
+                                              className={`p-3 rounded text-sm ${isDark ? "bg-gray-600/30 text-gray-200" : "bg-gray-50 text-gray-700"}`}
+                                            >
+                                              {selectedItem.description ? (
+                                                selectedItem.description.split("\n").map((line, idx) => (
+                                                  <span key={idx}>
+                                                    {line}
+                                                    <br />
+                                                  </span>
+                                                ))
+                                              ) : (
+                                                <span>Description non spécifiée</span>
+                                              )}
+                                            </div>
+                                          </CardContent>
+                                        </Card>
+                                      </div>
+                                    </DialogContent>
+                                  </Dialog>
+                                )}
+                              </>
+                            )}
+                          </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            )}
-          </>
-        )}
-
-        <footer className={`mt-8 pt-4 text-center text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-          <p>© SNTF - Système de Détection des Défauts de Rails</p>
-        </footer>
-      </div>
-    </div>
-  )
-}
+                      )
+                    }

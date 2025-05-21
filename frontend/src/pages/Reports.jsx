@@ -182,8 +182,6 @@ export default function Reports() {
           })
         }
       }, 500)
-
-      localStorage.removeItem("defectData")
     }
 
     return () => observer.disconnect()
@@ -421,14 +419,35 @@ export default function Reports() {
         },
       }
 
-      // Envoyer les données à l'API
-      const response = await fetch("http://localhost:8000/api/reports", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(reportData),
-      })
+      try {
+        // Envoyer les données à l'API
+        const response = await fetch("http://localhost:8000/api/reports", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(reportData),
+        })
 
-      if (!response.ok) throw new Error("Erreur lors de l'enregistrement du rapport")
+        if (!response.ok) throw new Error("Erreur lors de l'enregistrement du rapport")
+      } catch (error) {
+        console.error("Erreur API:", error)
+        // Continuer même si l'API échoue, en utilisant le localStorage
+      }
+
+      // Stocker les données du rapport dans le localStorage
+      const existingReports = JSON.parse(localStorage.getItem("railDefectReports") || "[]")
+      const updatedReports = [reportData, ...existingReports]
+      localStorage.setItem("railDefectReports", JSON.stringify(updatedReports))
+
+      // Stocker le statut du défaut pour la mise à jour sur la carte
+      if (defectData?.id) {
+        localStorage.setItem(
+          "reportStatus",
+          JSON.stringify({
+            defectId: defectData.id,
+            status: getFieldValue("action").toLowerCase(),
+          }),
+        )
+      }
 
       // Marquer le rapport comme soumis
       setIsSubmitted(true)

@@ -27,6 +27,18 @@ const icons = {
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],
   }),
+  réparé: new L.Icon({
+    iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+  }),
+  "non réparable": new L.Icon({
+    iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-grey.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+  }),
 }
 
 // Composant pour centrer la carte sur un défaut spécifique
@@ -47,6 +59,8 @@ function GraviteBadge({ niveau }) {
     critique: "bg-red-500 text-white",
     modere: "bg-orange-500 text-white",
     mineur: "bg-green-500 text-white",
+    réparé: "bg-green-500 text-white",
+    "non réparable": "bg-gray-500 text-white",
   }
   return (
     <span className={`text-xs px-2 py-1 rounded-full ${styles[niveau] || "bg-gray-300"}`}>
@@ -60,6 +74,7 @@ export default function Map({ highlightDefectId = null }) {
   const navigate = useNavigate()
   const [highlightedDefaut, setHighlightedDefaut] = useState(null)
   const markerRefs = useRef({})
+  const [defauts, setDefauts] = useState([])
 
   // Convertir les défauts en format compatible avec l'historique
   const convertDefautToReport = (defaut) => {
@@ -96,101 +111,150 @@ export default function Map({ highlightDefectId = null }) {
   }
 
   useEffect(() => {
+    // Charger les données GeoJSON
     fetch("/rails.geojson")
       .then((res) => res.json())
       .then((data) => setRailData(data))
       .catch((err) => console.error("Erreur chargement GeoJSON:", err))
+
+    // Charger les défauts depuis le localStorage ou utiliser les défauts par défaut
+    const savedDefauts = localStorage.getItem("railDefects")
+    if (savedDefauts) {
+      setDefauts(JSON.parse(savedDefauts))
+    } else {
+      // Défauts par défaut
+      const defaultDefauts = [
+        {
+          id: 1,
+          type: "Joint",
+          statut: "En attente",
+          date: "2025-05-01",
+          niveau: "critique",
+          localisation: "Zone A",
+          coords: [36.7408318, 3.4112183],
+        },
+        {
+          id: 2,
+          type: "Squad",
+          statut: "Résolu",
+          date: "2025-05-02",
+          niveau: "modere",
+          localisation: "Zone B",
+          coords: [36.7409917, 3.4108623],
+        },
+        {
+          id: 3,
+          type: "SSquad",
+          statut: "En attente",
+          date: "2025-05-03",
+          niveau: "mineur",
+          localisation: "Zone C",
+          coords: [36.7411218, 3.4105854],
+        },
+        {
+          id: 4,
+          type: "Joint",
+          statut: "Résolu",
+          date: "2025-05-04",
+          niveau: "critique",
+          localisation: "Zone D",
+          coords: [36.7347929, 3.343252],
+        },
+        {
+          id: 5,
+          type: "Squad",
+          statut: "En attente",
+          date: "2025-05-05",
+          niveau: "modere",
+          localisation: "Zone E",
+          coords: [36.7349185, 3.3425539],
+        },
+        {
+          id: 6,
+          type: "SSquad",
+          statut: "Résolu",
+          date: "2025-05-06",
+          niveau: "mineur",
+          localisation: "Zone F",
+          coords: [36.7350733, 3.3417762],
+        },
+        {
+          id: 7,
+          type: "Joint",
+          statut: "En attente",
+          date: "2025-05-07",
+          niveau: "critique",
+          localisation: "Zone G",
+          coords: [36.7343564, 3.3213445],
+        },
+        {
+          id: 8,
+          type: "Squad",
+          statut: "Résolu",
+          date: "2025-05-08",
+          niveau: "modere",
+          localisation: "Zone H",
+          coords: [36.7341181, 3.3204982],
+        },
+        {
+          id: 9,
+          type: "SSquad",
+          statut: "En attente",
+          date: "2025-05-09",
+          niveau: "mineur",
+          localisation: "Zone I",
+          coords: [36.7334262, 3.3163072],
+        },
+      ]
+      setDefauts(defaultDefauts)
+      localStorage.setItem("railDefects", JSON.stringify(defaultDefauts))
+    }
+
+    // Vérifier si un rapport a été soumis et mettre à jour le statut du défaut
+    const reportStatus = localStorage.getItem("reportStatus")
+    if (reportStatus) {
+      const { defectId, status } = JSON.parse(reportStatus)
+      updateDefectStatus(defectId, status)
+      localStorage.removeItem("reportStatus")
+    }
   }, [])
+
+  // Fonction pour mettre à jour le statut d'un défaut
+  const updateDefectStatus = (defectId, status) => {
+    // Extraire l'ID numérique du défaut (format D-2023-001)
+    const defautIdMatch = defectId.match(/\d+$/)
+    if (defautIdMatch) {
+      const defautId = Number.parseInt(defautIdMatch[0], 10)
+
+      setDefauts((prevDefauts) => {
+        const updatedDefauts = prevDefauts.map((defaut) => {
+          if (defaut.id === defautId) {
+            // Convertir le statut du rapport au format du défaut
+            let newStatut = "En attente"
+            if (status === "réparé") newStatut = "Résolu"
+            else if (status === "non réparable") newStatut = "Non réparable"
+
+            // Mettre à jour le niveau si le statut est "réparé" ou "non réparable"
+            const newNiveau =
+              status === "réparé" ? "réparé" : status === "non réparable" ? "non réparable" : defaut.niveau
+
+            return { ...defaut, statut: newStatut, niveau: newNiveau }
+          }
+          return defaut
+        })
+
+        // Sauvegarder les défauts mis à jour dans le localStorage
+        localStorage.setItem("railDefects", JSON.stringify(updatedDefauts))
+        return updatedDefauts
+      })
+    }
+  }
 
   const styleRail = {
     color: "#0a3172",
     weight: 4,
     opacity: 0.9,
   }
-
-  const defauts = [
-    {
-      id: 1,
-      type: "Joint",
-      statut: "En attente",
-      date: "2025-05-01",
-      niveau: "critique",
-      localisation: "Zone A",
-      coords: [36.7408318, 3.4112183],
-    },
-    {
-      id: 2,
-      type: "Squad",
-      statut: "Résolu",
-      date: "2025-05-02",
-      niveau: "modere",
-      localisation: "Zone B",
-      coords: [36.7409917, 3.4108623],
-    },
-    {
-      id: 3,
-      type: "SSquad",
-      statut: "En attente",
-      date: "2025-05-03",
-      niveau: "mineur",
-      localisation: "Zone C",
-      coords: [36.7411218, 3.4105854],
-    },
-    {
-      id: 4,
-      type: "Joint",
-      statut: "Résolu",
-      date: "2025-05-04",
-      niveau: "critique",
-      localisation: "Zone D",
-      coords: [36.7347929, 3.343252],
-    },
-    {
-      id: 5,
-      type: "Squad",
-      statut: "En attente",
-      date: "2025-05-05",
-      niveau: "modere",
-      localisation: "Zone E",
-      coords: [36.7349185, 3.3425539],
-    },
-    {
-      id: 6,
-      type: "SSquad",
-      statut: "Résolu",
-      date: "2025-05-06",
-      niveau: "mineur",
-      localisation: "Zone F",
-      coords: [36.7350733, 3.3417762],
-    },
-    {
-      id: 7,
-      type: "Joint",
-      statut: "En attente",
-      date: "2025-05-07",
-      niveau: "critique",
-      localisation: "Zone G",
-      coords: [36.7343564, 3.3213445],
-    },
-    {
-      id: 8,
-      type: "Squad",
-      statut: "Résolu",
-      date: "2025-05-08",
-      niveau: "modere",
-      localisation: "Zone H",
-      coords: [36.7341181, 3.3204982],
-    },
-    {
-      id: 9,
-      type: "SSquad",
-      statut: "En attente",
-      date: "2025-05-09",
-      niveau: "mineur",
-      localisation: "Zone I",
-      coords: [36.7334262, 3.3163072],
-    },
-  ]
 
   // Fonction pour générer un rapport à partir d'un défaut
   const handleGenerateReport = (defaut) => {
@@ -228,7 +292,7 @@ export default function Map({ highlightDefectId = null }) {
         }
       }
     }
-  }, [highlightDefectId])
+  }, [highlightDefectId, defauts])
 
   return (
     <MapContainer center={[36.75, 3.05]} zoom={13} scrollWheelZoom={true} className="h-[600px] w-full rounded-xl z-0">
@@ -271,7 +335,9 @@ export default function Map({ highlightDefectId = null }) {
                   className={`px-2 py-1 rounded-full text-xs ${
                     defaut.statut === "Résolu"
                       ? "bg-green-200 text-green-800 dark:bg-green-800 dark:text-white"
-                      : "bg-yellow-200 text-yellow-800 dark:bg-yellow-800 dark:text-white"
+                      : defaut.statut === "Non réparable"
+                        ? "bg-gray-200 text-gray-800 dark:bg-gray-800 dark:text-white"
+                        : "bg-yellow-200 text-yellow-800 dark:bg-yellow-800 dark:text-white"
                   }`}
                 >
                   {defaut.statut}
