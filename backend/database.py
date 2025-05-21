@@ -10,13 +10,15 @@ from typing import List
 load_dotenv()
 
 # Récupérer l'URL de connexion MongoDB depuis les variables d'environnement
-MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 
 # Créer une connexion à MongoDB
-client = MongoClient(MONGODB_URL)
+client = MongoClient(MONGO_URI)
 
 # Sélectionner la base de données
-db = client.rail_defects_db
+MONGO_DB = os.getenv("MONGO_DB", "railvision_db")
+db = client[MONGO_DB]
+
 
 # Sélectionner la collection pour les rapports
 reports_collection: Collection = db.reports
