@@ -6,6 +6,7 @@ import History from "./pages/History";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login"; // attention à la majuscule
 import Layout from "./components/Layout";
+import Settings from "./pages/Settings";
 
 function App() {
   return (
@@ -47,7 +48,14 @@ function App() {
             </Layout>
           }
         />
-    
+     <Route
+          path="/settings"
+          element={
+            <Layout>
+              <Settings />
+            </Layout>
+          }
+        />
       </Routes>
     </Router>
   );

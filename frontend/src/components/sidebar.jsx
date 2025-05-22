@@ -1,3 +1,5 @@
+"use client"
+
 import { Link, useLocation } from "react-router-dom"
 import { useState, useEffect } from "react"
 import { Home, FileText, History, Settings, Train, Info, X, Shield } from "lucide-react"
@@ -21,21 +23,28 @@ export default function Sidebar({ darkMode, isMobileOpen, setIsMobileOpen }) {
     { label: "Settings", path: "/settings", icon: <Settings size={18} /> },
   ]
 
-  // Ajoute le bouton Admin uniquement si c’est un administrateur
+  // Ajoute le bouton Admin uniquement si c'est un administrateur
   if (isAdmin) {
     navItems.push({
       label: "Admin",
       path: "/admin",
-      icon: <Shield size={18} />
+      icon: <Shield size={18} />,
     })
   }
 
   return (
     <>
       {/* Sidebar Desktop */}
-      <aside className={`hidden md:flex h-screen w-64 ${darkMode ? "bg-gray-800" : "bg-[#0a3172]"} text-white flex-col`}>
+      <aside
+        className={`hidden md:flex h-screen w-64 ${darkMode ? "bg-gray-800" : "bg-[#0a3172]"} text-white flex-col`}
+      >
         <div className="p-4 border-b">
           <div className="flex items-center space-x-2">
+            <img
+              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/cdta-sTU1fcIDpushBOEvkgLbOVUIb3QTf0.jpeg"
+              alt="CDTA Logo"
+              className="h-6 w-auto"
+            />
             <Train className="w-5 h-5" />
             <h2 className="text-lg font-bold">Rail Defect App</h2>
           </div>
@@ -71,6 +80,11 @@ export default function Sidebar({ darkMode, isMobileOpen, setIsMobileOpen }) {
           <div className={`w-64 ${darkMode ? "bg-gray-800" : "bg-[#0a3172]"} text-white flex flex-col`}>
             <div className="flex items-center justify-between p-4 border-b">
               <div className="flex items-center space-x-2">
+                <img
+                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/cdta-sTU1fcIDpushBOEvkgLbOVUIb3QTf0.jpeg"
+                  alt="CDTA Logo"
+                  className="h-6 w-auto"
+                />
                 <Train className="w-5 h-5" />
                 <h2 className="text-lg font-bold">Rail Defect App</h2>
               </div>
