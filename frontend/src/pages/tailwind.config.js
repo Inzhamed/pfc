@@ -9,3 +9,10 @@ export default {
   },
   plugins: [],
 }
+module.exports = {
+  // ...
+  plugins: [
+    require('@tailwindcss/forms'),
+    // autres plugins...
+  ],
+}

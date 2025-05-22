@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
+import AdminPage from './pages/AdminPage';
 import Reports from "./pages/Reports";
 import About from "./pages/About";
 import History from "./pages/History";
@@ -14,7 +14,7 @@ function App() {
         {/* Page sans Layout (ex : login) */}
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Login />} />
-
+        <Route path="/admin" element={<AdminPage />} />
         {/* Pages avec Layout */}
         <Route
           path="/dashboard"

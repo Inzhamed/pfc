@@ -1,9 +1,17 @@
 import { Link, useLocation } from "react-router-dom"
-import { Home, FileText, History, Settings, Train, Info, X } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Home, FileText, History, Settings, Train, Info, X, Shield } from "lucide-react"
 
 export default function Sidebar({ darkMode, isMobileOpen, setIsMobileOpen }) {
   const location = useLocation()
   const currentPath = location.pathname
+
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    const adminStatus = localStorage.getItem("isAdmin")
+    setIsAdmin(adminStatus === "true")
+  }, [])
 
   const navItems = [
     { label: "Dashboard", path: "/dashboard", icon: <Home size={18} /> },
@@ -12,6 +20,15 @@ export default function Sidebar({ darkMode, isMobileOpen, setIsMobileOpen }) {
     { label: "About", path: "/about", icon: <Info size={18} /> },
     { label: "Settings", path: "/settings", icon: <Settings size={18} /> },
   ]
+
+  // Ajoute le bouton Admin uniquement si c’est un administrateur
+  if (isAdmin) {
+    navItems.push({
+      label: "Admin",
+      path: "/admin",
+      icon: <Shield size={18} />
+    })
+  }
 
   return (
     <>
@@ -75,7 +92,6 @@ export default function Sidebar({ darkMode, isMobileOpen, setIsMobileOpen }) {
               ))}
             </nav>
           </div>
-          {/* overlay */}
           <div className="flex-1 bg-black bg-opacity-50" onClick={() => setIsMobileOpen(false)} />
         </div>
       )}
