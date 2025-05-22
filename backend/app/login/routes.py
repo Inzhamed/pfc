@@ -17,18 +17,23 @@ def create_technicien(user: schemas.UserCreate):
     hashed_pw = utils.hash_password(user.password)
     new_user = {
         "email": user.email,
-        "password": hashed_pw,  # <== clé modifiée ici
+        "password": hashed_pw,
         "is_admin": user.is_admin
     }
     result = technicien_collection.insert_one(new_user)
-    return {"id": str(result.inserted_id), "email": user.email}
+    return {
+        "_id": str(result.inserted_id),
+        "email": user.email,
+        "is_admin": user.is_admin
+    }
+
 
 @router.get("/")
 def list_techniciens():
     users = technicien_collection.find()
     return [
         {
-            "id": str(user["_id"]),
+            "_id": str(user["_id"]),
             "email": user["email"],
             "is_admin": user.get("is_admin", False)  # sécurité si absent
         }
@@ -48,3 +53,21 @@ def login(user: schemas.UserCreate):
     if not technicien:
         raise HTTPException(status_code=401, detail="Identifiants invalides")
     return {"message": "Connexion réussie", "email": technicien["email"], "is_admin": technicien.get("is_admin", False)}
+
+@router.put("/{user_id}")
+def update_technicien(user_id: str, updated_data: schemas.UserUpdate):
+    update_fields = {}
+    if updated_data.email:
+        update_fields["email"] = updated_data.email
+    if updated_data.password:
+        update_fields["password"] = utils.hash_password(updated_data.password)
+    if updated_data.is_admin is not None:
+        update_fields["is_admin"] = updated_data.is_admin
+
+    result = technicien_collection.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": update_fields}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Technicien non trouvé")
+    return {"message": "Technicien mis à jour"}

@@ -9,3 +9,8 @@ class UserCreate(UserBase):
 
 class UserInDB(UserBase):
     password: str  # changer "hashed_password" en "password" pour correspondre à MongoDB
+
+class UserUpdate(BaseModel):
+    email: EmailStr
+    password: str
+    is_admin: bool = False
