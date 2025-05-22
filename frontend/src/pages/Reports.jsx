@@ -84,7 +84,12 @@ export default function Reports() {
       icon: <User className="w-4 h-4" />,
       placeholder: "Ex: Bouchra Amari",
     },
-    { id: "technician-id", label: "Matricule", icon: <BadgeCheck className="w-4 h-4" />, placeholder: "Ex: TECH-4092" },
+    {
+      id: "technician-id",
+      label: "Matricule (format TECH-XXXX)",
+      icon: <BadgeCheck className="w-4 h-4" />,
+      placeholder: "Ex: TECH-2025",
+    },
     {
       id: "technician-role",
       label: "Fonction",
@@ -312,7 +317,7 @@ export default function Reports() {
       setIsSubmitting(true)
 
       // Récupérer les valeurs du formulaire
-      const getFieldValue = (id) => document.getElementById(id)?.value
+      const getFieldValue = (id) => document.getElementById(id)?.value || ""
       const requiredFields = ["technician-name", "technician-id", "defect-type", "action"]
 
       // Vérifier les champs obligatoires
@@ -323,9 +328,73 @@ export default function Reports() {
           description: "Veuillez remplir tous les champs obligatoires",
           variant: "destructive",
         })
+        alert("Champs manquants: Veuillez remplir tous les champs obligatoires")
         setIsSubmitting(false)
         return
       }
+
+      // Vérifier que le nom du technicien ne contient que des caractères alphabétiques
+      const technicianName = getFieldValue("technician-name")
+      // Cette regex accepte les lettres (y compris accentuées), espaces, tirets et apostrophes
+      const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s\-']+$/
+      if (!nameRegex.test(technicianName)) {
+        toast({
+          title: "Format incorrect",
+          description: "Le nom du technicien ne doit contenir que des caractères alphabétiques",
+          variant: "destructive",
+        })
+        alert("Format incorrect: Le nom du technicien ne doit contenir que des caractères alphabétiques")
+        setIsSubmitting(false)
+        return
+      }
+
+      // Vérifier le format du matricule (TECH-XXXX)
+      const matricule = getFieldValue("technician-id")
+      console.log("Matricule saisi:", matricule) // Log pour débogage
+
+      // Utiliser une expression régulière simple pour vérifier le format
+      if (!matricule.startsWith("TECH-") || !/^TECH-\d{4}$/.test(matricule)) {
+        console.log("Validation du matricule échouée") // Log pour débogage
+        toast({
+          title: "Format incorrect",
+          description: "Le matricule doit être au format TECH-XXXX (ex: TECH-2025)",
+          variant: "destructive",
+        })
+        alert("Format incorrect: Le matricule doit être au format TECH-XXXX (ex: TECH-2025)")
+        setIsSubmitting(false)
+        return
+      }
+
+      // Vérifier la date
+      const reportDate = getFieldValue("report-date")
+      if (!reportDate) {
+        toast({
+          title: "Date manquante",
+          description: "Veuillez sélectionner une date pour le rapport",
+          variant: "destructive",
+        })
+        alert("Date manquante: Veuillez sélectionner une date pour le rapport")
+        setIsSubmitting(false)
+        return
+      }
+
+      // Vérifier que la date n'est pas dans le futur
+      const selectedDate = new Date(reportDate)
+      const currentDate = new Date()
+      // Réinitialiser les heures, minutes, secondes pour comparer uniquement les dates
+      currentDate.setHours(0, 0, 0, 0)
+      if (selectedDate > currentDate) {
+        toast({
+          title: "Date invalide",
+          description: "La date du rapport ne peut pas être dans le futur",
+          variant: "destructive",
+        })
+        alert("Date invalide: La date du rapport ne peut pas être dans le futur")
+        setIsSubmitting(false)
+        return
+      }
+
+      console.log("Toutes les validations ont réussi") // Log pour débogage
 
       // Préparer les données pour l'API
       const reportData = {
