@@ -49,9 +49,7 @@ export default function Layout({ children }) {
               >
                 <Menu className="w-6 h-6" />
               </button>
-              <span className="text-sm opacity-90">
-                Système de Détection des Défauts de Rails
-              </span>
+              
             </div>
 
             <div className="flex items-center gap-4">
