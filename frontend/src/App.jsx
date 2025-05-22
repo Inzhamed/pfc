@@ -4,7 +4,8 @@ import Reports from "./pages/Reports";
 import About from "./pages/About";
 import History from "./pages/History";
 import Dashboard from "./pages/Dashboard";
-import Login from "./pages/Login"; // attention à la majuscule
+import Login from "./pages/Login"; 
+import Settings from "./pages/Settings";
 import Layout from "./components/Layout";
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Login />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/settings" element={<Settings />} />
         {/* Pages avec Layout */}
         <Route
           path="/dashboard"
