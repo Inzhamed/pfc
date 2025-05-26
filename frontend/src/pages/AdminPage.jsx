@@ -10,7 +10,7 @@ export default function AdminPage() {
   const [editingTechnician, setEditingTechnician] = useState(null)
 
   const fetchTechnicians = () => {
-    fetch("http://127.0.0.1:8000/api/techniciens")  // ✅ correction ici
+    fetch("http://127.0.0.1:8000/api/techniciens")
       .then(res => res.json())
       .then(data => setTechnicians(data))
       .catch(err => console.error("Erreur récupération techniciens:", err))
@@ -23,8 +23,8 @@ export default function AdminPage() {
   const handleAddOrUpdate = (technician) => {
     const method = editingTechnician ? "PUT" : "POST"
     const url = editingTechnician
-      ? `http://127.0.0.1:8000/api/techniciens/${editingTechnician._id}`  // ✅ correction ici
-      : "http://127.0.0.1:8000/api/techniciens"                            // ✅ correction ici
+      ? `http://127.0.0.1:8000/api/techniciens/${editingTechnician._id}`
+      : "http://127.0.0.1:8000/api/techniciens"
 
     fetch(url, {
       method,
@@ -39,7 +39,7 @@ export default function AdminPage() {
   }
 
   const handleDelete = (id) => {
-    fetch(`http://127.0.0.1:8000/api/techniciens/${id}`, { method: "DELETE" })  // ✅ correction ici
+    fetch(`http://127.0.0.1:8000/api/techniciens/${id}`, { method: "DELETE" })
       .then(() => setTechnicians(technicians.filter(t => t._id !== id)))
       .catch(err => console.error("Erreur suppression:", err))
   }

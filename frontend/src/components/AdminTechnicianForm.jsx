@@ -6,10 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 
-// Checkbox simple, intégrée ici pour ne pas multiplier les fichiers
+// ✅ Checkbox intégrée avec support du thème dark
 function Checkbox({ id, label, checked, onChange }) {
   return (
-    <label htmlFor={id} className="inline-flex items-center space-x-2 cursor-pointer select-none">
+    <label
+      htmlFor={id}
+      className="inline-flex items-center space-x-2 cursor-pointer select-none text-gray-800 dark:text-gray-200"
+    >
       <input
         type="checkbox"
         id={id}
@@ -30,7 +33,7 @@ export default function AdminTechnicianForm({ onSubmit, initialData = null, onCa
   useEffect(() => {
     if (initialData) {
       setEmail(initialData.email)
-      setPassword("") // ne pas pré-remplir le mot de passe pour la sécurité
+      setPassword("") // sécurité : ne pas afficher le mot de passe
       setIsAdmin(initialData.is_admin)
     }
   }, [initialData])
@@ -44,14 +47,15 @@ export default function AdminTechnicianForm({ onSubmit, initialData = null, onCa
   }
 
   return (
-    <Card className="bg-white dark:bg-gray-800 border border-blue-100 dark:border-gray-700">
+    <Card className="bg-white dark:bg-gray-800 border border-blue-100 dark:border-gray-700 transition-colors">
       <CardContent className="p-6">
-        <h2 className="text-lg font-semibold mb-4">
+        <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
           {initialData ? "Modifier un technicien" : "Ajouter un technicien"}
         </h2>
+
         <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
           <div>
-            <Label htmlFor="email">Email professionnel</Label>
+            <Label htmlFor="email" className="text-gray-800 dark:text-gray-200">Email professionnel</Label>
             <Input
               type="email"
               id="email"
@@ -59,10 +63,12 @@ export default function AdminTechnicianForm({ onSubmit, initialData = null, onCa
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="nomprenom@stnf.com"
+              className="bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
             />
           </div>
+
           <div>
-            <Label htmlFor="password">Mot de passe (matricule)</Label>
+            <Label htmlFor="password" className="text-gray-800 dark:text-gray-200">Mot de passe (matricule)</Label>
             <Input
               type="password"
               id="password"
@@ -70,8 +76,10 @@ export default function AdminTechnicianForm({ onSubmit, initialData = null, onCa
               onChange={(e) => setPassword(e.target.value)}
               required={!initialData}
               placeholder="123456"
+              className="bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
             />
           </div>
+
           <div>
             <Checkbox
               id="isAdmin"
