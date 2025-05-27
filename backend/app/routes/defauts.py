@@ -9,13 +9,17 @@ from bson import ObjectId
 router = APIRouter()
 
 
-@router.get("/defauts", response_model=List[Defaut])
+@router.get("/defauts")
 async def get_defauts():
     """
     Récupérer tous les défauts enregistrés dans la base de données.
     """
-    defauts = await defauts_collection.find().to_list(length=100)
+    defauts = []
+    async for defaut in defauts_collection.find():
+        defaut["_id"] = str(defaut["_id"])  # ✅ SERIALISATION EXPLICITE
+        defauts.append(defaut)
     return defauts
+
 
 
 @router.post("/defauts", response_model=Defaut)
