@@ -1,53 +1,13 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
-import Reports from "./pages/Reports";
-import About from "./pages/About";
-import History from "./pages/History";
+import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import Login from "./pages/Login"; // attention à la majuscule
-import Layout from "./components/Layout";
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Page sans Layout (ex : login) */}
-        <Route path="/login" element={<Login />} />
         <Route path="/" element={<Login />} />
-
-        {/* Pages avec Layout */}
-        <Route
-          path="/dashboard"
-          element={
-            <Dashboard />
-        
-          }
-        />
-        <Route
-          path="/reports"
-          element={
-            <Layout>
-              <Reports />
-            </Layout>
-          }
-        />
-        <Route
-          path="/about"
-          element={
-            <Layout>
-              <About />
-            </Layout>
-          }
-        />
-        <Route
-          path="/history"
-          element={
-            <Layout>
-              <History />
-            </Layout>
-          }
-        />
-    
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </Router>
   );
