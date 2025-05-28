@@ -364,29 +364,33 @@ if (
 
   // Effet pour mettre en évidence un défaut spécifique
   useEffect(() => {
-    if (highlightDefectId) {
-      // Extraire le numéro du défaut à partir de l'ID (format D-2023-001)
-      const defautIdMatch = highlightDefectId.match(/\d+$/);
-      if (defautIdMatch) {
-        const defautId = Number.parseInt(defautIdMatch[0], 10);
-
-        // Trouver le défaut correspondant
-        const defaut = defauts.find((d) => d.id === defautId);
-
-        if (defaut) {
-          setHighlightedDefaut(defaut);
-
-          // Ouvrir le popup du marqueur correspondant
-          setTimeout(() => {
-            if (markerRefs.current[defautId]) {
-              markerRefs.current[defautId].openPopup();
-            }
-          }, 1000);
-        } else {
-        }
-      }
+  if (highlightDefectId) {
+    const defaut = defauts.find((d) => d._id === highlightDefectId);
+    if (defaut) {
+      setHighlightedDefaut(defaut);
     }
+  }
+
+
   }, [highlightDefectId, defauts]);
+
+  function FlyToDefaut({ defaut, markerRefs }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (defaut) {
+      map.flyTo(defaut.coords, 15, { duration: 1.5 });
+
+      setTimeout(() => {
+        const marker = markerRefs.current[defaut._id];
+        if (marker) marker.openPopup();
+      }, 800);
+    }
+  }, [defaut]);
+
+  return null;
+}
+
 
   return (
     <MapContainer
@@ -403,7 +407,10 @@ if (
       {railData && <GeoJSON data={railData} style={styleRail} />}
 
       {/* Composant pour centrer la carte sur le défaut sélectionné */}
-      {highlightedDefaut && <CenterMapOnDefect defaut={highlightedDefaut} />}
+      {highlightedDefaut && (
+  <FlyToDefaut defaut={highlightedDefaut} markerRefs={markerRefs} />
+)}
+
 
       {defautsFiltres.map((defaut) => (
         <Marker

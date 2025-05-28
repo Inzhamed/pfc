@@ -5,29 +5,38 @@ import {
 } from "@/components/ui/popover";
 import { Bell, AlertCircle, CheckCircle2, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const notifications = [
-  {
-    id: 1,
-    type: "critical",
-    message: "🚧 Défaut critique détecté à El Harrach",
-    time: "Il y a 2 min",
-  },
-  {
-    id: 2,
-    type: "resolved",
-    message: "✅ Défaut résolu secteur Est",
-    time: "Il y a 12 min",
-  },
-  {
-    id: 3,
-    type: "info",
-    message: "ℹ️ Nouvelle mise à jour des données",
-    time: "Il y a 1h",
-  },
-];
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Notifications() {
+  const [notifications, setNotifications] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch("http://localhost:8000/defauts")
+      .then((res) => res.json())
+      .then((data) => {
+        const dynamic = data
+          .slice(0, 10) // Limiter aux 10 plus récents
+          .map((d) => ({
+            id: d._id?.$oid || d._id,
+            type:
+              d.niveau_defaut === "critique"
+                ? "critical"
+                : d.niveau_defaut === "modere"
+                ? "warning"
+                : "resolved",
+            message: `🔧 Défaut ${d.niveau_defaut} à ${d.region || "zone inconnue"}`,
+            time: d.date,
+            defectId: d._id?.$oid || d._id,
+          }));
+        setNotifications(dynamic);
+      })
+      .catch((err) =>
+        console.error("Erreur de chargement des notifications :", err)
+      );
+  }, []);
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -55,10 +64,10 @@ export default function Notifications() {
                 switch (notif.type) {
                   case "critical":
                     return "bg-red-100 text-red-800 dark:bg-red-900/30";
+                  case "warning":
+                    return "bg-orange-100 text-orange-800 dark:bg-orange-900/30";
                   case "resolved":
                     return "bg-green-100 text-green-800 dark:bg-green-900/30";
-                  case "info":
-                    return "bg-blue-100 text-blue-800 dark:bg-blue-900/30";
                   default:
                     return "bg-muted";
                 }
@@ -73,17 +82,17 @@ export default function Notifications() {
                         size={18}
                       />
                     );
+                  case "warning":
+                    return (
+                      <Info
+                        className="text-orange-600 dark:text-orange-400"
+                        size={18}
+                      />
+                    );
                   case "resolved":
                     return (
                       <CheckCircle2
                         className="text-green-600 dark:text-green-400"
-                        size={18}
-                      />
-                    );
-                  case "info":
-                    return (
-                      <Info
-                        className="text-blue-600 dark:text-blue-400"
                         size={18}
                       />
                     );
@@ -95,7 +104,8 @@ export default function Notifications() {
               return (
                 <li
                   key={notif.id}
-                  className={`flex items-start gap-3 p-3 rounded-lg border ${getStyles()}`}
+                  className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer ${getStyles()}`}
+                  onClick={() => navigate(`/dashboard?defectId=${notif.defectId}`)}
                 >
                   <div className="pt-0.5">{getIcon()}</div>
                   <div className="flex-1">
