@@ -136,6 +136,19 @@ export default function Map({ highlightDefectId = null, filters = null }) {
   const [defauts, setDefauts] = useState([]);
   // Appliquer les filtres dynamiques aux défauts
   const defautsFiltres = defauts.filter((d) => {
+    const query = filters.searchQuery?.toLowerCase();
+
+if (
+  query &&
+  !(
+    (d.description?.toLowerCase().includes(query)) ||
+    (d.localisation?.toLowerCase().includes(query))
+  )
+) {
+  return false;
+}
+
+
     if (filters) {
       // Gravité
       if (filters.gravite.length > 0 && !filters.gravite.includes(d.niveau)) {
@@ -174,14 +187,7 @@ export default function Map({ highlightDefectId = null, filters = null }) {
         return false;
       }
 
-      // Recherche textuelle
-      if (
-        filters.searchQuery &&
-        d.description &&
-        !d.description.toLowerCase().includes(filters.searchQuery)
-      ) {
-        return false;
-      }
+      
     }
 
     return true;
