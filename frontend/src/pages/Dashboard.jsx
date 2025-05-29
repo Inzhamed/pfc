@@ -11,33 +11,36 @@ import { Button } from "@/components/ui/button";
 // Composant pour une carte statistique
 const StatCard = ({ title, value, icon, color, percent = 100 }) => {
   const isDark = document.documentElement.classList.contains("dark");
+
   return (
     <Card
       className={
-        isDark ? "bg-gray-800 border-gray-700" : "bg-white border-blue-100"
+        isDark
+          ? "bg-transparent border-gray-700"
+          : "bg-white border-blue-100 shadow-none"
       }
     >
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
+      <CardContent className="px-3 py-2">
+        <div className="flex items-center justify-between gap-2">
+          <div className="leading-tight">
             <p
-              className={`text-sm font-medium ${
-                isDark ? "text-gray-400" : "text-gray-500"
+              className={`text-sm font-bold ${
+                isDark ? "text-white" : "text-black"
               }`}
             >
               {title}
             </p>
-            <h3 className="text-2xl font-bold mt-1">{value}</h3>
+            <h3 className="text-lg font-extrabold">{value}</h3>
           </div>
           <div
-            className={`p-3 rounded-full ${
+            className={`p-1 rounded ${
               isDark ? `${color}-900/30` : `${color}-100`
             }`}
           >
             {icon}
           </div>
         </div>
-        <div className="mt-4 h-1 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+        <div className="mt-2 h-1 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
           <div
             className={`h-1 bg-${color}-600 rounded-full`}
             style={{ width: `${percent}%` }}
