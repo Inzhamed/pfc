@@ -38,13 +38,8 @@ const LoginPage = () => {
         password
       });
 
-      console.log("Réponse backend :", response.data);
-
-      // ✅ Sauvegarde du token et du rôle admin
       localStorage.setItem("token", response.data.access_token);
-      localStorage.setItem("isAdmin", response.data.is_admin); // "true" ou "false"
-
-      // ✅ Redirection après connexion
+      localStorage.setItem("isAdmin", response.data.is_admin);
       navigate("/dashboard");
     } catch (error) {
       console.error("Erreur de connexion :", error);
@@ -71,29 +66,43 @@ const LoginPage = () => {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col md:flex-row ${isDark ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-800"}`}>
+    <div className={`min-h-screen flex flex-col md:flex-row ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
       {/* Bouton de changement de thème */}
       <button
         onClick={toggleTheme}
-        className={`absolute top-4 right-4 p-2 rounded-full ${isDark ? "bg-gray-700 hover:bg-gray-600" : "bg-gray-200 hover:bg-gray-300"} transition`}
+        className={`absolute top-4 right-4 p-2 rounded-full ${isDark ? "bg-gray-700 hover:bg-gray-600" : "bg-gray-200 hover:bg-gray-300"} transition z-50`}
         aria-label="Changer de thème"
       >
         {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
       </button>
 
-      {/* Colonne gauche */}
-      <div className={`w-full md:w-1/2 p-8 md:p-16 flex flex-col justify-center ${isDark ? "bg-gray-800" : "bg-blue-50"}`}>
-        <h1 className="text-4xl font-bold mb-6 md:mb-10 text-center md:text-left">Rail Defect App</h1>
-        <p className={`text-2xl md:text-3xl font-semibold leading-snug mb-4 md:mb-6 text-center md:text-left ${isDark ? "text-gray-200" : "text-gray-800"}`}>
-          Précision. Sécurité. Innovation.
-        </p>
-        <p className={`text-base md:text-lg text-center md:text-left ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-          Grâce à l'intelligence artificielle, notre système détecte automatiquement les défauts des rails
-          avec une précision inégalée, améliorant la sécurité ferroviaire tout en réduisant les coûts d'inspection.
-        </p>
+      {/* Colonne gauche avec l'image de train parfaitement positionnée */}
+      <div className="w-full md:w-1/2 relative">
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: "url('https://images.unsplash.com/photo-1474487548417-781cb71495f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')"
+          }}
+        />
+        <div 
+          className="absolute inset-0 bg-gradient-to-br from-blue-900/90 to-blue-700/80"
+          style={{
+            background: "linear-gradient(135deg, rgba(13, 59, 124, 0.9), rgba(107, 140, 222, 0.8))"
+          }}
+        />
+        <div className="relative z-10 h-full flex flex-col justify-center p-8 md:p-16">
+          <h1 className="text-4xl font-bold mb-6 md:mb-10 text-white">Rail Defect App</h1>
+          <p className="text-2xl md:text-3xl font-semibold mb-4 md:mb-6 text-white">
+            Précision. Sécurité. Innovation.
+          </p>
+          <p className="text-base md:text-lg text-gray-100">
+            Grâce à l'intelligence artificielle, notre système détecte automatiquement les défauts des rails
+            avec une précision inégalée, améliorant la sécurité ferroviaire tout en réduisant les coûts d'inspection.
+          </p>
+        </div>
       </div>
 
-      {/* Colonne droite */}
+      {/* Colonne droite - Formulaire de connexion */}
       <div className={`w-full md:w-1/2 flex items-center justify-center p-8 ${isDark ? "bg-gray-900" : "bg-white"}`}>
         <form
           onSubmit={handleSubmit}
@@ -107,29 +116,33 @@ const LoginPage = () => {
             </div>
           )}
 
-          <label className={`block mb-1 text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-            Email
-          </label>
-          <input
-            type="email"
-            placeholder="email@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={`w-full px-4 py-2 border rounded-md mb-4 ${isDark ? "bg-gray-700 border-gray-600 focus:border-blue-500" : "bg-white border-gray-300 focus:border-blue-500"} focus:ring-1 focus:ring-blue-500 focus:outline-none transition`}
-            required
-          />
+          <div className="mb-4">
+            <label className={`block mb-1 text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+              Email
+            </label>
+            <input
+              type="email"
+              placeholder="email@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={`w-full px-4 py-2 border rounded-md ${isDark ? "bg-gray-700 border-gray-600 focus:border-blue-500" : "bg-white border-gray-300 focus:border-blue-500"} focus:ring-1 focus:ring-blue-500 focus:outline-none transition`}
+              required
+            />
+          </div>
 
-          <label className={`block mb-1 text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-            Mot de passe
-          </label>
-          <input
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={`w-full px-4 py-2 border rounded-md mb-4 ${isDark ? "bg-gray-700 border-gray-600 focus:border-blue-500" : "bg-white border-gray-300 focus:border-blue-500"} focus:ring-1 focus:ring-blue-500 focus:outline-none transition`}
-            required
-          />
+          <div className="mb-4">
+            <label className={`block mb-1 text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+              Mot de passe
+            </label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className={`w-full px-4 py-2 border rounded-md ${isDark ? "bg-gray-700 border-gray-600 focus:border-blue-500" : "bg-white border-gray-300 focus:border-blue-500"} focus:ring-1 focus:ring-blue-500 focus:outline-none transition`}
+              required
+            />
+          </div>
 
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center">

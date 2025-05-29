@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+<<<<<<< HEAD
 import AdminPage from './pages/AdminPage';
 import Reports from "./pages/Reports";
 import About from "./pages/About";
@@ -7,14 +8,17 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login"; // attention à la majuscule
 import Layout from "./components/Layout";
 import Settings from "./pages/Settings";
+=======
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+>>>>>>> origin/backend-malek
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Page sans Layout (ex : login) */}
-        <Route path="/login" element={<Login />} />
         <Route path="/" element={<Login />} />
+<<<<<<< HEAD
         <Route path="/admin" element={<AdminPage />} />
         {/* Pages avec Layout */}
         <Route
@@ -56,6 +60,9 @@ function App() {
             </Layout>
           }
         />
+=======
+        <Route path="/dashboard" element={<Dashboard />} />
+>>>>>>> origin/backend-malek
       </Routes>
     </Router>
   );

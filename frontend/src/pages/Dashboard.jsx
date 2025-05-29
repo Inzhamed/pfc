@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 // Composant pour une carte statistique
 const StatCard = ({ title, value, icon, color, percent = 100 }) => {
   const isDark = document.documentElement.classList.contains("dark");
+<<<<<<< HEAD
   return (
     <Card
       className={
@@ -23,21 +24,49 @@ const StatCard = ({ title, value, icon, color, percent = 100 }) => {
             <p
               className={`text-sm font-medium ${
                 isDark ? "text-gray-400" : "text-gray-500"
+=======
+
+  return (
+    <Card
+      className={
+        isDark
+          ? "bg-transparent border-gray-700"
+          : "bg-white border-blue-100 shadow-none"
+      }
+    >
+      <CardContent className="px-3 py-2">
+        <div className="flex items-center justify-between gap-2">
+          <div className="leading-tight">
+            <p
+              className={`text-sm font-bold ${
+                isDark ? "text-white" : "text-black"
+>>>>>>> origin/backend-malek
               }`}
             >
               {title}
             </p>
+<<<<<<< HEAD
             <h3 className="text-2xl font-bold mt-1">{value}</h3>
           </div>
           <div
             className={`p-3 rounded-full ${
+=======
+            <h3 className="text-lg font-extrabold">{value}</h3>
+          </div>
+          <div
+            className={`p-1 rounded ${
+>>>>>>> origin/backend-malek
               isDark ? `${color}-900/30` : `${color}-100`
             }`}
           >
             {icon}
           </div>
         </div>
+<<<<<<< HEAD
         <div className="mt-4 h-1 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+=======
+        <div className="mt-2 h-1 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+>>>>>>> origin/backend-malek
           <div
             className={`h-1 bg-${color}-600 rounded-full`}
             style={{ width: `${percent}%` }}
@@ -102,6 +131,51 @@ const SimpleSelect = ({ id, value, onChange, options, label }) => {
     </div>
   );
 };
+<<<<<<< HEAD
+=======
+const ActiveFiltersSummary = ({ filters, onRemove }) => {
+  const renderBadges = [];
+
+  const addBadge = (key, value) => {
+    renderBadges.push(
+      <span
+        key={`${key}-${value}`}
+        className="inline-flex items-center bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-1 rounded-full"
+      >
+        {`${key} : ${value}`}
+        <button
+          onClick={() => onRemove(key, value)}
+          className="ml-1 text-blue-500 hover:text-blue-700"
+        >
+          ✕
+        </button>
+      </span>
+    );
+  };
+
+  if (!filters) return null;
+
+  if (filters.gravite?.length)
+    filters.gravite.forEach((g) => addBadge("Gravité", g));
+
+  if (filters.statut?.length)
+    filters.statut.forEach((s) => addBadge("Statut", s));
+
+  if (filters.typeDefaut?.length)
+    filters.typeDefaut.forEach((t) => addBadge("Type", t));
+
+  if (filters.zone && filters.zone !== "all") addBadge("Zone", filters.zone);
+
+  if (filters.trajet && filters.trajet !== "all")
+    addBadge("Trajet", filters.trajet);
+
+  if (filters.date) addBadge("Date", filters.date);
+
+  if (filters.searchQuery) addBadge("Recherche", filters.searchQuery);
+
+  return <div className="mb-4 flex flex-wrap">{renderBadges}</div>;
+};
+>>>>>>> origin/backend-malek
 
 export default function Dashboard() {
   const [searchParams] = useSearchParams();
@@ -127,6 +201,16 @@ export default function Dashboard() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   useEffect(() => {
+<<<<<<< HEAD
+=======
+    setActiveFilters({
+      ...filters,
+      searchQuery: searchQuery.toLowerCase(),
+    });
+  }, [filters, searchQuery]);
+
+  useEffect(() => {
+>>>>>>> origin/backend-malek
     // Observer le thème
     setIsDark(document.documentElement.classList.contains("dark"));
     const observer = new MutationObserver(() =>
@@ -236,6 +320,26 @@ export default function Dashboard() {
     setActiveFilters(null);
   };
 
+<<<<<<< HEAD
+=======
+  const handleRemoveFilter = (key, value) => {
+    console.log("Suppression filtre :", key, value);
+    const updatedFilters = { ...filters };
+
+    if (Array.isArray(updatedFilters[key])) {
+      // Ex: gravite, statut, typeDefaut
+      updatedFilters[key] = updatedFilters[key].filter(
+        (item) => item !== value
+      );
+    } else {
+      // Ex: zone, trajet, date
+      updatedFilters[key] = key === "zone" || key === "trajet" ? "all" : "";
+    }
+
+    setFilters(updatedFilters);
+  };
+
+>>>>>>> origin/backend-malek
   return (
     <Layout>
       <div className="p-4 md:p-8 max-w-screen-xl mx-auto w-full">
@@ -339,6 +443,14 @@ export default function Dashboard() {
           />
         </div>
 
+<<<<<<< HEAD
+=======
+        <ActiveFiltersSummary
+          filters={activeFilters}
+          onRemove={handleRemoveFilter}
+        />
+
+>>>>>>> origin/backend-malek
         {/* Bouton pour afficher/masquer les filtres sur mobile */}
         <div className="md:hidden mb-4">
           <Button
