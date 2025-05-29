@@ -1,7 +1,8 @@
-
 import { useState } from "react";
+import jwt_decode from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { login } from "@/api/auth";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,45 +18,49 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  
-  const handleLogin = (e: React.FormEvent) => {
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // For demo purposes, use a mock login - in a real app, this would call an API
-    setTimeout(() => {
-      // Simple validation
-      if (email.trim() && password.trim()) {
-        // Store user info in localStorage - in a real app, you'd store a JWT token
-        localStorage.setItem("isLoggedIn", "true");
-        if (rememberMe) {
-          localStorage.setItem("userEmail", email);
-        }
-        
-        toast({
-          title: "Login successful",
-          description: "Welcome to Rail View Guardian Dashboard",
-        });
-        
-        navigate("/dashboard");
-      } else {
-        toast({
-          title: "Login failed",
-          description: "Please enter valid credentials",
-          variant: "destructive",
-        });
+
+    try {
+      const { access_token } = await login(email, password);
+
+      // Store the token in localStorage or cookies
+      localStorage.setItem("accessToken", access_token);
+      localStorage.setItem("isLoggedIn", "true");
+      // Decode JWT to get role
+      const decoded: any = jwt_decode(access_token);
+      localStorage.setItem("userId", decoded.user_id);
+      localStorage.setItem("userRole", decoded.role);
+      if (rememberMe) {
+        localStorage.setItem("userEmail", email);
       }
+
+      toast({
+        title: "Login successful",
+        description: "Welcome to Rail View Guardian Dashboard",
+      });
+
+      navigate("/dashboard");
+    } catch (error) {
+      toast({
+        title: "Login failed",
+        description: "Invalid email or password",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
-  
+
   return (
     <div className="min-h-screen flex flex-col justify-center items-center p-4 bg-background">
       <div className="w-full max-w-md mb-8 text-center">
         <h1 className="text-3xl font-bold mb-2">Rail View Guardian</h1>
         <p className="text-muted-foreground">Sign in to access your dashboard</p>
       </div>
-      
+
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Sign In</CardTitle>
@@ -63,7 +68,7 @@ export default function Login() {
             Enter your credentials to access your account
           </CardDescription>
         </CardHeader>
-        
+
         <form onSubmit={handleLogin}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -77,7 +82,7 @@ export default function Login() {
                 required
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
@@ -100,26 +105,26 @@ export default function Login() {
                 </Button>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-2">
-              <Checkbox 
+              <Checkbox
                 id="remember"
-                checked={rememberMe} 
-                onCheckedChange={(checked) => setRememberMe(checked === true)} 
+                checked={rememberMe}
+                onCheckedChange={(checked) => setRememberMe(checked === true)}
               />
-              <Label 
-                htmlFor="remember" 
+              <Label
+                htmlFor="remember"
                 className="text-sm font-normal cursor-pointer"
               >
                 Remember me
               </Label>
             </div>
           </CardContent>
-          
+
           <CardFooter className="flex flex-col">
-            <Button 
-              type="submit" 
-              className="w-full" 
+            <Button
+              type="submit"
+              className="w-full"
               disabled={isLoading}
             >
               {isLoading ? (

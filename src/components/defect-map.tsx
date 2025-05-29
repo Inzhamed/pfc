@@ -38,6 +38,7 @@ interface DefectMapProps {
   onDefectSelect: (defect: Defect) => void;
   selectedDefect?: Defect | null;
   className?: string;
+  onMarkAsRepaired?: (defect: Defect) => void;
 }
 
 // Get marker color based on severity
@@ -52,9 +53,9 @@ const getSeverityColor = (severity: SeverityLevel): string => {
 };
 
 // Map component
-export const DefectMap: React.FC<DefectMapProps> = ({ 
+export const DefectMap: React.FC<DefectMapProps> = ({
   defects = [],
-  onDefectSelect, 
+  onDefectSelect,
   selectedDefect,
   className = ''
 }) => {
@@ -92,7 +93,7 @@ export const DefectMap: React.FC<DefectMapProps> = ({
     if (!mapRef.current || leafletMapRef.current) return;
 
     const L = window.L;
-    
+
     // Create map centered on Chicago
     const map = L.map(mapRef.current, {
       center: [41.8781, -87.6298], // Chicago
@@ -116,17 +117,17 @@ export const DefectMap: React.FC<DefectMapProps> = ({
     const L = window.L;
     const map = leafletMapRef.current;
     const currentMarkers = markersRef.current;
-    
+
     // Remove existing markers
     Object.values(currentMarkers).forEach((marker: any) => {
       map.removeLayer(marker);
     });
     markersRef.current = {};
-    
+
     // Add markers for defects
     defects.forEach(defect => {
       const { lat, lng } = defect.location;
-      
+
       // Create custom marker icon based on severity
       const color = getSeverityColor(defect.severity);
       const customIcon = L.divIcon({
@@ -137,7 +138,7 @@ export const DefectMap: React.FC<DefectMapProps> = ({
         iconSize: [16, 16],
         iconAnchor: [8, 8]
       });
-      
+
       // Create marker
       const marker = L.marker([lat, lng], { icon: customIcon })
         .addTo(map)
@@ -146,30 +147,30 @@ export const DefectMap: React.FC<DefectMapProps> = ({
           if (mapRef.current) {
             const rect = mapRef.current.getBoundingClientRect();
             const point = map.latLngToContainerPoint([lat, lng]);
-            setPopupPosition({ 
-              x: rect.left + point.x, 
-              y: rect.top + point.y 
+            setPopupPosition({
+              x: rect.left + point.x,
+              y: rect.top + point.y
             });
             setPopupOpen(true);
           }
           onDefectSelect(defect);
         });
-      
+
       // Add pulse animation to critical markers
       if (defect.severity === 'critical' && defect.status !== 'resolved') {
         marker._icon.classList.add('animate-pulse-alert');
       }
-      
+
       // Highlight selected defect
-      if (selectedDefect && selectedDefect.id === defect.id) {
+      if (selectedDefect && selectedDefect._id === defect._id) {
         marker._icon.innerHTML = `<div class="w-6 h-6 -ml-1 -mt-1 rounded-full border-2 border-white bg-${defect.status === 'resolved' ? 'severity-resolved' : `severity-${defect.severity}`} shadow-lg flex items-center justify-center">
           ${defect.status === 'resolved' ? '<div class="w-2 h-2 rounded-full bg-white"></div>' : ''}
         </div>`;
       }
-      
-      markersRef.current[defect.id] = marker;
+
+      markersRef.current[defect._id] = marker;
     });
-    
+
     // Fit bounds if there are defects
     if (defects.length > 0) {
       const bounds = L.latLngBounds(defects.map(d => [d.location.lat, d.location.lng]));
@@ -180,18 +181,18 @@ export const DefectMap: React.FC<DefectMapProps> = ({
   // Update selected defect highlight
   useEffect(() => {
     if (!mapLoaded || !leafletMapRef.current) return;
-    
+
     // Reset all markers to normal size
     Object.entries(markersRef.current).forEach(([defectId, marker]: [string, any]) => {
-      const defect = defects.find(d => d.id === defectId);
+      const defect = defects.find(d => d._id === defectId);
       if (!defect) return;
-      
-      if (selectedDefect && selectedDefect.id === defectId) {
+
+      if (selectedDefect && selectedDefect._id === defectId) {
         // Highlight the selected marker
         marker._icon.innerHTML = `<div class="w-6 h-6 -ml-1 -mt-1 rounded-full border-2 border-white bg-${defect.status === 'resolved' ? 'severity-resolved' : `severity-${defect.severity}`} shadow-lg flex items-center justify-center">
           ${defect.status === 'resolved' ? '<div class="w-2 h-2 rounded-full bg-white"></div>' : ''}
         </div>`;
-        
+
         // Center map on selected defect
         leafletMapRef.current.setView([defect.location.lat, defect.location.lng], 13);
       } else {
@@ -199,7 +200,7 @@ export const DefectMap: React.FC<DefectMapProps> = ({
         marker._icon.innerHTML = `<div class="w-4 h-4 rounded-full bg-${defect.status === 'resolved' ? 'severity-resolved' : `severity-${defect.severity}`} border-2 border-white shadow-md flex items-center justify-center">
           ${defect.status === 'resolved' ? '<div class="w-1.5 h-1.5 rounded-full bg-white"></div>' : ''}
         </div>`;
-        
+
         // Re-add animation for critical defects
         if (defect.severity === 'critical' && defect.status !== 'resolved') {
           marker._icon.classList.add('animate-pulse-alert');
@@ -209,44 +210,44 @@ export const DefectMap: React.FC<DefectMapProps> = ({
   }, [selectedDefect, mapLoaded, defects]);
 
   // Handle repair action
-  const handleMarkAsRepaired = () => {
-    if (!selectedDefect) return;
-    
-    // In a real application, this would call an API to update the defect
-    toast({
-      title: "Defect marked as repaired",
-      description: `Defect ${selectedDefect.id} has been marked as repaired.`,
-    });
-    
-    setPopupOpen(false);
-  };
+  // const handleMarkAsRepaired = () => {
+  //   if (!selectedDefect) return;
+  //   if (onMarkAsRepaired) {
+  //     onMarkAsRepaired(selectedDefect);
+  //   }
+  //   // In a real application, this would call an API to update the defect
+  //   toast({
+  //     title: "Defect marked as repaired",
+  //     description: `Defect ${selectedDefect._id} has been marked as repaired.`,
+  //   });
+
+  //   setPopupOpen(false);
+  // };
 
   // Navigate to reports page with the selected defect
   const handleStartReport = () => {
     if (!selectedDefect) return;
-    
-    // Navigate to reports page with defect ID as query param
-    navigate(`/reports?defect=${selectedDefect.id}`);
+    navigate("/reports", { state: { defect: selectedDefect } });
   };
 
   return (
-    <div 
-      ref={mapRef} 
+    <div
+      ref={mapRef}
       className={`h-full w-full rounded-lg overflow-hidden relative ${className}`}
-      style={{zIndex: 1}}
+      style={{ zIndex: 1 }}
     >
       {selectedDefect && (
         <Popover open={popupOpen} onOpenChange={setPopupOpen}>
           <PopoverTrigger asChild>
             <div className="hidden">Trigger</div>
           </PopoverTrigger>
-          <PopoverContent 
+          <PopoverContent
             className="w-80 p-0 rounded-lg overflow-hidden shadow-lg z-20"
             style={{
               position: 'absolute',
               left: (popupPosition?.x || 0) + 'px',
               top: (popupPosition?.y || 0) + 'px',
-              transform: 'translate(-50%, -120%)',
+              transform: 'translate(-50%, -100%)',
             }}
           >
             <div className="bg-card border-b">
@@ -255,29 +256,29 @@ export const DefectMap: React.FC<DefectMapProps> = ({
                   <div className="text-lg font-medium">{selectedDefect.type.toUpperCase()}</div>
                 </div>
               </div>
-              
+
               <div className="p-4">
                 <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-semibold">{selectedDefect.id}</h3>
+                  <h3 className="font-semibold">{selectedDefect._id}</h3>
                   <SeverityBadge severity={selectedDefect.severity} />
                 </div>
-                
+
                 <div className="space-y-2 text-sm">
                   <p className="text-muted-foreground">{selectedDefect.description}</p>
                   <p>Track: {selectedDefect.location.trackId}</p>
                   <p>Mile marker: {selectedDefect.location.mileMarker}</p>
-                  <p>Detected: {format(new Date(selectedDefect.detectedAt), 'PPP p')}</p>
+                  <p>Detected: {format(new Date(selectedDefect.detected_at), 'PPP p')}</p>
                 </div>
               </div>
             </div>
-            
-            <div className="p-3 flex gap-2 justify-end bg-muted/50">
-              {selectedDefect.status !== 'resolved' && (
+
+            <div className="p-3 flex gap-2 justify-center bg-muted/50">
+              {/* {selectedDefect.status !== 'resolved' && (
                 <Button size="sm" onClick={handleMarkAsRepaired}>
                   <Check className="mr-1 h-4 w-4" />
                   Mark Repaired
                 </Button>
-              )}
+              )} */}
               <Button size="sm" variant="outline" onClick={handleStartReport}>
                 <FileText className="mr-1 h-4 w-4" />
                 Start Report

@@ -3,13 +3,13 @@ import { DashboardLayout } from "@/components/dashboard-layout";
 import { DashboardStats } from "@/components/dashboard-stats";
 import DefectMap from "@/components/defect-map";
 import { FilterControls } from "@/components/filter-controls";
-import { DefectDetail } from "@/components/defect-detail";
 import { useState, useEffect } from "react";
-import { Defect, filterDefects, mockDefects } from "@/data/defect-data";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchDefects, updateDefect } from "@/api/defects";
+import { Defect, filterDefects} from "@/data/defect-data";
 
 export default function DashboardPage() {
   const [selectedDefect, setSelectedDefect] = useState<Defect | null>(null);
-  const [filteredDefects, setFilteredDefects] = useState<Defect[]>(mockDefects);
   const [filters, setFilters] = useState({
     severity: [],
     type: [],
@@ -17,20 +17,51 @@ export default function DashboardPage() {
     dateRange: {}
   });
 
-  useEffect(() => {
-    const filtered = filterDefects(mockDefects, filters);
-    setFilteredDefects(filtered);
-  }, [filters]);
+  const queryClient = useQueryClient();
+
+  // Fetch defects from backend
+  const { data: defects = [], isLoading } = useQuery({
+    queryKey: ["defects"],
+    queryFn: fetchDefects,
+  });
+
+  // Filtering (client-side for now)
+  const filteredDefects = filterDefects(defects, filters);
 
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
+  };
+
+  const handleMarkAsRepaired = (defect: Defect) => {
+    updateDefectMutation.mutate({
+      defectId: defect._id,
+      data: { status: "resolved" },
+    });
+  };
+
+  // Mutations for status
+  const updateDefectMutation = useMutation<
+    { defectId: string; data: Partial<Defect> }, // argument type
+    unknown,
+    { defectId: string; data: Partial<Defect> }
+  >({
+    mutationFn: ({ defectId, data }) => updateDefect(defectId, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["defects"] }),
+  });
+
+  // Pass these handlers to DefectDetail
+  const handleStatusChange = (defect, newStatus) => {
+    updateDefectMutation.mutate({
+      defectId: defect._id,
+      data: { status: newStatus },
+    });
   };
 
   return (
     <DashboardLayout onDefectSelect={setSelectedDefect}>
       <div className="p-4 md:p-6 h-full overflow-y-auto">
         <div className="mb-4 md:mb-6">
-          <DashboardStats />
+          <DashboardStats defects={defects} isLoading={isLoading} />
         </div>
         
         {/* Different layouts for mobile and desktop */}
@@ -39,9 +70,10 @@ export default function DashboardPage() {
           <div className="lg:col-span-3">
             <div className="bg-card dark:glass-card rounded-lg overflow-hidden border shadow-sm h-[400px] md:h-[500px] lg:h-[calc(100vh-280px)]">
               <DefectMap 
-                defects={filteredDefects} 
+                defects={defects} 
                 onDefectSelect={setSelectedDefect}
                 selectedDefect={selectedDefect}
+                onMarkAsRepaired={handleMarkAsRepaired}
               />
             </div>
           </div>
@@ -52,21 +84,6 @@ export default function DashboardPage() {
             <div className="sticky top-0 z-10">
               <FilterControls onFilterChange={handleFilterChange} />
             </div>
-            
-            {/* {selectedDefect && (
-              <div className="min-h-[300px]">
-                <DefectDetail 
-                  defect={selectedDefect}
-                  onStatusChange={(defect, newStatus) => {
-                    console.log(`Changing status of defect ${defect.id} to ${newStatus}`);
-                  }}
-                  onAddComment={(defect, comment) => {
-                    console.log(`Adding comment to defect ${defect.id}: ${comment}`);
-                  }}
-                  className="h-full"
-                />
-              </div>
-            )} */}
           </div>
         </div>
       </div>

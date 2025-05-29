@@ -7,6 +7,7 @@ interface FilterState {
   showPending: boolean;
 }
 
+
 export function useDefectFiltering(initialDefects: Defect[]) {
   const [defects, setDefects] = useState<Defect[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -32,7 +33,7 @@ export function useDefectFiltering(initialDefects: Defect[]) {
       
       const search = searchTerm.toLowerCase();
       return (
-        defect.id.toLowerCase().includes(search) ||
+        defect._id.toLowerCase().includes(search) ||
         defect.type.toLowerCase().includes(search) ||
         defect.location.trackId.toLowerCase().includes(search) ||
         defect.description.toLowerCase().includes(search)

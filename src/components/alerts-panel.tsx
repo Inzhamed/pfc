@@ -1,91 +1,42 @@
-
-import { Bell } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { fetchDefects } from "@/api/defects";
 import { getRecentDefects, Defect } from "@/data/defect-data";
-import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
+import { Bell } from "lucide-react";
 
 interface AlertsPanelProps {
   onSelectDefect: (defect: Defect) => void;
 }
 
 export function AlertsPanel({ onSelectDefect }: AlertsPanelProps) {
+  const { data: defects = [], isLoading } = useQuery({
+    queryKey: ["defects"],
+    queryFn: fetchDefects,
+  });
+
+  const [open, setOpen] = useState(false);
   const [recentDefects, setRecentDefects] = useState<Defect[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [open, setOpen] = useState(false);
-  const { toast } = useToast();
 
-  // Load initial alerts
   useEffect(() => {
-    const recents = getRecentDefects();
-    setRecentDefects(recents);
-    setUnreadCount(recents.length);
-    
-    // Show toast for critical defects
-    const criticalDefects = recents.filter(d => d.severity === 'critical');
-    if (criticalDefects.length > 0) {
-      toast({
-        title: `${criticalDefects.length} Critical defect${criticalDefects.length > 1 ? 's' : ''} detected`,
-        description: "These defects require immediate attention.",
-        variant: "destructive"
-      });
+    if (defects.length) {
+      const recents = getRecentDefects(defects);
+      setRecentDefects(recents);
+      setUnreadCount(recents.length);
     }
-    
-    // Simulate new alert every 15-30 seconds
-    const interval = setInterval(() => {
-      const newAlert = getRecentDefects()[0]; // Get one random defect
-      if (newAlert) {
-        // Update to make the timestamp recent
-        const now = new Date();
-        newAlert.detectedAt = now.toISOString();
-        
-        setRecentDefects(prev => [newAlert, ...prev]);
-        setUnreadCount(prev => prev + 1);
-        
-        if (newAlert.severity === 'critical' || newAlert.severity === 'high') {
-          toast({
-            title: `New ${newAlert.severity} defect detected`,
-            description: newAlert.description,
-            variant: newAlert.severity === 'critical' ? "destructive" : "default"
-          });
-        }
-      }
-    }, Math.random() * 15000 + 15000); // Random interval between 15-30 seconds
-    
-    return () => clearInterval(interval);
-  }, [toast]);
-  
-  // Mark all as read
+  }, [defects]);
+
   const markAllAsRead = () => {
     setUnreadCount(0);
   };
-  
-  // Handle defect selection
+
   const handleDefectSelect = (defect: Defect) => {
     onSelectDefect(defect);
     setOpen(false);
-  };
-  
-  // Format time (like "2 minutes ago")
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
-    if (seconds < 60) return "Just now";
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
-    const days = Math.floor(hours / 24);
-    return `${days} day${days !== 1 ? 's' : ''} ago`;
   };
 
   return (
@@ -116,43 +67,38 @@ export function AlertsPanel({ onSelectDefect }: AlertsPanelProps) {
         </div>
         <Separator />
         <div className="max-h-80 overflow-auto">
-          {recentDefects.length > 0 ? (
+          {isLoading ? (
+            <div className="p-4 text-center text-muted-foreground">Loading...</div>
+          ) : recentDefects.length > 0 ? (
             recentDefects.slice(0, 10).map((defect) => (
               <div
-                key={defect.id + defect.detectedAt}
+                key={defect._id + defect.detected_at}
                 className="p-3 hover:bg-muted/50 cursor-pointer"
                 onClick={() => handleDefectSelect(defect)}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-2">
-                    <div 
-                      className={`w-2 h-2 rounded-full bg-severity-${defect.severity}`} 
+                    <div
+                      className={`w-2 h-2 rounded-full bg-severity-${defect.severity}`}
                     />
-                    <span className="font-medium text-sm">
-                      {defect.id}: {defect.type} defect
-                    </span>
+                    <span className="font-medium">{defect.type}</span>
                   </div>
                   <span className="text-xs text-muted-foreground">
-                    {formatTimeAgo(defect.detectedAt)}
+                    {new Date(defect.detected_at).toLocaleTimeString()}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground ml-4 mt-1 line-clamp-2">
+                <div className="text-xs text-muted-foreground truncate">
                   {defect.description}
-                </p>
+                </div>
               </div>
             ))
           ) : (
-            <div className="p-4 text-center text-sm text-muted-foreground">
-              No new alerts
+            <div className="p-4 text-center text-muted-foreground">
+              No recent alerts.
             </div>
           )}
         </div>
         <Separator />
-        <div className="p-2">
-          <Button variant="outline" size="sm" className="w-full text-xs">
-            View all alerts
-          </Button>
-        </div>
       </PopoverContent>
     </Popover>
   );

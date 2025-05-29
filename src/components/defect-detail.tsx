@@ -120,7 +120,7 @@ export function DefectDetail({
           <div>
             <CardTitle className="text-lg">{defectTypeInfo.label}</CardTitle>
             <CardDescription className="text-xs">
-              ID: {defect.id} - Detected {formatDate(defect.detectedAt)}
+              ID: {defect._id} - Detected {formatDate(defect.detected_at)}
             </CardDescription>
           </div>
           <Badge
@@ -172,25 +172,6 @@ export function DefectDetail({
             GPS: {defect.location.lat.toFixed(6)}, {defect.location.lng.toFixed(6)}
           </p>
         </div>
-
-        {defect.comments && defect.comments.length > 0 && (
-          <div>
-            <h4 className="text-sm font-medium mb-1">Comments</h4>
-            <div className="space-y-2 max-h-32 overflow-y-auto">
-              {defect.comments.map((comment, i) => (
-                <div key={i} className="text-xs bg-muted p-2 rounded-md">
-                  <div className="font-medium">{comment.userName}</div>
-                  <div className="text-muted-foreground mt-0.5">
-                    {comment.text}
-                  </div>
-                  <div className="text-[10px] text-muted-foreground mt-1">
-                    {formatDate(comment.timestamp)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {defect.status !== "resolved" && (
           <div>

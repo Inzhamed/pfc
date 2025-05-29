@@ -11,6 +11,7 @@ import DashboardPage from "./pages/Dashboard";
 import ReportsPage from "./pages/Reports";
 import HistoryPage from "./pages/History";
 import SettingsPage from "./pages/Settings";
+import AdminPanelPage from "./pages/AdminPanel";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,11 @@ const App = () => (
               <DashboardPage />
             </ProtectedRoute>
           } />
+          <Route path="/admin" element={
+            <ProtectedRoute>
+              <AdminPanelPage />
+            </ProtectedRoute>
+          } />
           <Route path="/reports" element={
             <ProtectedRoute>
               <ReportsPage />
@@ -43,6 +49,8 @@ const App = () => (
               <SettingsPage />
             </ProtectedRoute>
           } />
+
+
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

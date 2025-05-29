@@ -1,4 +1,3 @@
-
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -15,14 +14,53 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Bell, Globe, Mail, Shield } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect} from "react";
+import { useToast } from "@/hooks/use-toast";
+import axios from "axios";
+import { API_BASE_URL } from "@/api";
 
 export default function SettingsPage() {
   const [selectedDefect, setSelectedDefect] = useState(null);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [language, setLanguage] = useState("en");
+  const [newEmail, setNewEmail] = useState("demo@example.com");
+  const [newPassword, setNewPassword] = useState("");
+  const userId = localStorage.getItem("userId");
+  const { toast } = useToast();
   
+  useEffect(() => {
+    async function fetchUser() {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/users/${userId}`);
+        setNewEmail(res.data.email);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    if (userId) fetchUser();
+  }, [userId]);
+
+  async function handleChangeEmail() {
+    try {
+      await axios.put(`${API_BASE_URL}/users/${userId}`, { email: newEmail });
+      toast({ title: "Email changed successfully!" });
+    } catch (error) {
+      console.error(error);
+      toast({ title: "Failed to change email", variant: "destructive" });
+    }
+  }
+
+  async function handleChangePassword() {
+    try {
+      await axios.put(`${API_BASE_URL}/users/${userId}`, { password: newPassword });
+      toast({ title: "Password changed successfully!" });
+    } catch (error) {
+      console.error(error);
+      toast({ title: "Failed to change password", variant: "destructive" });
+    }
+  }
+
   return (
     <DashboardLayout onDefectSelect={setSelectedDefect}>
       <ScrollArea className="h-full w-full">
@@ -78,24 +116,24 @@ export default function SettingsPage() {
                 <div className="flex gap-2">
                   <Input 
                     type="email" 
-                    value="demo@example.com" 
-                    disabled 
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
                     className="max-w-md"
                   />
-                  <Button variant="outline">Change</Button>
+                  <Button variant="outline" onClick={handleChangeEmail}>Change</Button>
                 </div>
               </div>
               <Separator />
               <div className="space-y-2">
-                <Label>Password</Label>
+                <Label>New Password</Label>
                 <div className="flex gap-2">
                   <Input 
                     type="password" 
-                    value="********" 
-                    disabled 
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
                     className="max-w-md"
                   />
-                  <Button variant="outline">Change</Button>
+                  <Button variant="outline" onClick={handleChangePassword}>Change</Button>
                 </div>
               </div>
             </CardContent>

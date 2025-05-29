@@ -36,8 +36,8 @@ export function DefectTable({ defects, onViewMap, onCreateReport }: DefectTableP
         <TableBody>
           {defects.length > 0 ? (
             defects.map((defect) => (
-              <TableRow key={defect.id} className="hover:bg-muted/50 cursor-pointer">
-                <TableCell className="font-medium">{defect.id}</TableCell>
+              <TableRow key={defect._id} className="hover:bg-muted/50 cursor-pointer">
+                <TableCell className="font-medium">{defect._id}</TableCell>
                 <TableCell>{defect.type}</TableCell>
                 <TableCell>
                   <SeverityBadge severity={defect.severity} />
@@ -45,7 +45,7 @@ export function DefectTable({ defects, onViewMap, onCreateReport }: DefectTableP
                 <TableCell>
                   <StatusBadge status={defect.status} />
                 </TableCell>
-                <TableCell>{new Date(defect.detectedAt).toLocaleDateString()}</TableCell>
+                <TableCell>{new Date(defect.detected_at).toLocaleDateString()}</TableCell>
                 <TableCell className="max-w-[200px] truncate">
                   {`${defect.location.trackId}, Mile ${defect.location.mileMarker}`}
                 </TableCell>

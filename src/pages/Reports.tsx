@@ -8,9 +8,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { toast } from "@/components/ui/sonner";
-import { mockDefects, type Defect } from "@/data/defect-data";
+import { type Defect } from "@/data/defect-data";
 import { useLocation, useNavigate } from "react-router-dom";
 import { CalendarDays, FileText, ClipboardList } from "lucide-react";
+import { createReport } from "@/api/reports";
+import { log } from "console";
 
 interface ReportFormValues {
   title: string;
@@ -18,7 +20,8 @@ interface ReportFormValues {
   action: string;
   materials: string;
   technician: string;
-  timeRequired: string;
+  time_required: string;
+  // created_at will be set by backend
 }
 
 interface LocationState {
@@ -29,7 +32,7 @@ export default function ReportsPage() {
   const [selectedDefect, setSelectedDefect] = useState<Defect | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   // Check if a defect was passed via location state
   useEffect(() => {
     const state = location.state as LocationState;
@@ -40,25 +43,40 @@ export default function ReportsPage() {
 
   const form = useForm<ReportFormValues>({
     defaultValues: {
-      title: selectedDefect ? `Report for ${selectedDefect.id}` : "",
+      title: selectedDefect ? `Report for ${selectedDefect._id}` : "",
       description: "",
       action: "",
       materials: "",
       technician: "",
-      timeRequired: "",
+      time_required: "",
     }
   });
 
-  const onSubmit = (data: ReportFormValues) => {
-    console.log("Report submitted:", { defect: selectedDefect, ...data });
+  const onSubmit = async (data: ReportFormValues) => {
+    if (!selectedDefect) {
+      toast.error("Please select a defect first.");
+      return;
+    }
+    console.log("Selected Defect:", selectedDefect);
     
-    // Show success message
-    toast.success("Report submitted successfully");
-    
-    // Navigate back to dashboard after submission
-    setTimeout(() => {
-      navigate("/dashboard");
-    }, 2000);
+    try {
+      await createReport({
+        defect_id: selectedDefect._id,
+        title: data.title,
+        description: data.description,
+        action: data.action,
+        materials: data.materials,
+        technician: data.technician,
+        time_required: data.time_required,
+        // created_at will be set by backend
+      });
+      toast.success("Report submitted successfully");
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 2000);
+    } catch (err) {
+      toast.error("Failed to submit report");
+    }
   };
 
   return (
@@ -72,8 +90,8 @@ export default function ReportsPage() {
                 <CardTitle>Create Defect Report</CardTitle>
               </div>
               <p className="text-muted-foreground">
-                {selectedDefect 
-                  ? `Creating report for defect ID: ${selectedDefect.id}`
+                {selectedDefect
+                  ? `Creating report for defect ID: ${selectedDefect._id}`
                   : "Fill out the form to create a defect report"}
               </p>
             </CardHeader>
@@ -84,7 +102,7 @@ export default function ReportsPage() {
                   <div className="grid gap-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">ID:</span>
-                      <span className="font-medium">{selectedDefect.id}</span>
+                      <span className="font-medium">{selectedDefect._id}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Type:</span>
@@ -102,12 +120,12 @@ export default function ReportsPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Detected:</span>
-                      <span className="font-medium">{new Date(selectedDefect.detectedAt).toLocaleDateString()}</span>
+                      <span className="font-medium">{new Date(selectedDefect.detected_at).toLocaleDateString()}</span>
                     </div>
                   </div>
                 </div>
               )}
-              
+
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                   <FormField
@@ -126,7 +144,7 @@ export default function ReportsPage() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="description"
@@ -134,17 +152,17 @@ export default function ReportsPage() {
                       <FormItem>
                         <FormLabel>Description</FormLabel>
                         <FormControl>
-                          <Textarea 
-                            placeholder="Describe the defect in detail..." 
+                          <Textarea
+                            placeholder="Describe the defect in detail..."
                             className="min-h-[120px]"
-                            {...field} 
+                            {...field}
                           />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
@@ -153,17 +171,17 @@ export default function ReportsPage() {
                         <FormItem>
                           <FormLabel>Recommended Action</FormLabel>
                           <FormControl>
-                            <Textarea 
-                              placeholder="What actions should be taken?" 
+                            <Textarea
+                              placeholder="What actions should be taken?"
                               className="min-h-[80px]"
-                              {...field} 
+                              {...field}
                             />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="materials"
@@ -171,10 +189,10 @@ export default function ReportsPage() {
                         <FormItem>
                           <FormLabel>Materials Required</FormLabel>
                           <FormControl>
-                            <Textarea 
-                              placeholder="List required materials..." 
+                            <Textarea
+                              placeholder="List required materials..."
                               className="min-h-[80px]"
-                              {...field} 
+                              {...field}
                             />
                           </FormControl>
                           <FormMessage />
@@ -182,7 +200,7 @@ export default function ReportsPage() {
                       )}
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
@@ -197,10 +215,10 @@ export default function ReportsPage() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
-                      name="timeRequired"
+                      name="time_required"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Estimated Time Required</FormLabel>
@@ -212,7 +230,7 @@ export default function ReportsPage() {
                       )}
                     />
                   </div>
-                  
+
                   <CardFooter className="flex justify-end px-0 pt-4">
                     <Button type="submit" className="w-full md:w-auto">
                       <ClipboardList className="mr-2 h-4 w-4" />

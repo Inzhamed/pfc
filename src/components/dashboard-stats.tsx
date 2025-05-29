@@ -2,9 +2,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDefectStatistics } from "@/data/defect-data";
 
-export function DashboardStats() {
-  const stats = getDefectStatistics();
-
+export function DashboardStats({ defects, isLoading }) {
+  const stats = getDefectStatistics(defects);
+  if (isLoading) {
+    return <div>Loading stats...</div>;
+  }
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
       <Card className="bg-card dark:glass-card">

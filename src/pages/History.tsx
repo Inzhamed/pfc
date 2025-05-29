@@ -4,7 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { History as HistoryIcon } from "lucide-react";
-import { mockDefects, type Defect } from "@/data/defect-data";
+import { type Defect } from "@/data/defect-data";
+import { useQuery } from "@tanstack/react-query";
+import { fetchDefects } from "@/api/defects";
 import { DefectFilters } from "@/components/history/DefectFilters";
 import { DefectTable } from "@/components/history/DefectTable";
 import { useDefectFiltering } from "@/hooks/use-defect-filtering";
@@ -12,13 +14,17 @@ import { useDefectFiltering } from "@/hooks/use-defect-filtering";
 export default function HistoryPage() {
   const [selectedDefect, setSelectedDefect] = useState<Defect | null>(null);
   const navigate = useNavigate();
+  const { data: defects = [], isLoading } = useQuery({
+    queryKey: ["defects"],
+    queryFn: fetchDefects,
+  });
   const {
     searchTerm,
     setSearchTerm,
     filters,
     setFilters,
     filteredDefects
-  } = useDefectFiltering(mockDefects);
+  } = useDefectFiltering(defects);
 
   // Handle creating a report for a defect
   const handleCreateReport = (defect: Defect): void => {
@@ -30,6 +36,9 @@ export default function HistoryPage() {
     navigate("/dashboard", { state: { defect } });
   };
 
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
   return (
     <DashboardLayout onDefectSelect={setSelectedDefect}>
       <div className="p-6 h-full overflow-y-auto">
@@ -40,7 +49,7 @@ export default function HistoryPage() {
                 <HistoryIcon className="h-6 w-6 text-primary" />
                 <CardTitle>Defect History</CardTitle>
               </div>
-              <DefectFilters 
+              <DefectFilters
                 filters={filters}
                 setFilters={setFilters}
                 searchTerm={searchTerm}
@@ -49,9 +58,9 @@ export default function HistoryPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <DefectTable 
-              defects={filteredDefects} 
-              onViewMap={handleViewOnMap} 
+            <DefectTable
+              defects={filteredDefects}
+              onViewMap={handleViewOnMap}
               onCreateReport={handleCreateReport}
             />
           </CardContent>
