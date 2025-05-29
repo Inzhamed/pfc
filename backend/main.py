@@ -5,6 +5,7 @@ import database
 
 from app.login.routes import router as login_router
 from app.admin.routes import admin_router
+from app.settings.routes import router as settings_router  # Nouvelle ligne
 
 app = FastAPI()
 
@@ -17,10 +18,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Inclure les routes login et admin
+# Inclure les routes login, admin et settings
 app.include_router(login_router, prefix="/api", tags=["login"])
 app.include_router(admin_router)
-
+app.include_router(settings_router, prefix="/api", tags=["settings"])  # Nouvelle ligne
 
 # Routes CRUD pour les rapports
 @app.get("/")

@@ -1,178 +1,232 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/Label"
+import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Bell, Globe, Shield, Save } from "lucide-react"
-
+import { Shield, Save, LogOut } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 export default function Settings() {
-  const [emailNotifications, setEmailNotifications] = useState(true)
-  const [pushNotifications, setPushNotifications] = useState(true)
-  const [language, setLanguage] = useState("fr")
-  const [isDark, setIsDark] = useState(false)
+  const navigate = useNavigate()
+  const [isLoading, setIsLoading] = useState(false)
+  const [passwordData, setPasswordData] = useState({
+    current_password: "",
+    new_password: "",
+    confirmPassword: "",
+  })
+  const [errors, setErrors] = useState({})
+  const [message, setMessage] = useState("")
 
-  // Détecter le thème sombre/clair
-  useEffect(() => {
-    setIsDark(document.documentElement.classList.contains("dark"))
-    const observer = new MutationObserver(() => setIsDark(document.documentElement.classList.contains("dark")))
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] })
-    return () => observer.disconnect()
-  }, [])
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setPasswordData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
 
-  const handleSaveSettings = () => {
-    // Simuler la sauvegarde des paramètres
-    console.log("Paramètres sauvegardés:", {
-      emailNotifications,
-      pushNotifications,
-      language,
-    })
-    // Afficher une notification ou un message de succès
-    alert("Paramètres sauvegardés avec succès!")
+    // Clear error when user types
+    if (errors[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: null,
+      }))
+    }
+  }
+
+  const validateForm = () => {
+    const newErrors = {}
+
+    if (!passwordData.current_password) {
+      newErrors.current_password = "Le mot de passe actuel est requis"
+    }
+
+    if (!passwordData.new_password) {
+      newErrors.new_password = "Le nouveau mot de passe est requis"
+    } else if (passwordData.new_password.length < 4) {
+      newErrors.new_password = "Le mot de passe doit contenir au moins 4 caractères"
+    }
+
+    if (!passwordData.confirmPassword) {
+      newErrors.confirmPassword = "Veuillez confirmer votre mot de passe"
+    } else if (passwordData.new_password !== passwordData.confirmPassword) {
+      newErrors.confirmPassword = "Les mots de passe ne correspondent pas"
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault()
+    setMessage("")
+
+    if (!validateForm()) {
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      // Récupérer le token depuis localStorage
+      const token = localStorage.getItem("token")
+      if (!token) {
+        setMessage("Vous devez être connecté pour effectuer cette action")
+        return
+      }
+
+      console.log("Token trouvé:", token) // Debug
+
+      const response = await fetch("http://127.0.0.1:8000/api/settings/change-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          current_password: passwordData.current_password,
+          new_password: passwordData.new_password,
+        }),
+      })
+
+      const data = await response.json()
+      console.log("Réponse du serveur:", data) // Debug
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Échec de la modification du mot de passe")
+      }
+
+      setMessage("Votre mot de passe a été modifié avec succès")
+
+      // Reset form
+      setPasswordData({
+        current_password: "",
+        new_password: "",
+        confirmPassword: "",
+      })
+    } catch (error) {
+      console.error("Erreur:", error) // Debug
+      setMessage(error.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem("token")
+
+      // Appeler l'endpoint de déconnexion (optionnel)
+      if (token) {
+        await fetch("http://127.0.0.1:8000/api/settings/logout", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+      }
+
+      // Supprimer le token du localStorage
+      localStorage.removeItem("token")
+
+      // Rediriger vers la page de connexion
+      navigate("/login")
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion:", error)
+      // Même en cas d'erreur, on supprime le token et on redirige
+      localStorage.removeItem("token")
+      navigate("/login")
+    }
   }
 
   return (
-  
-      <div className="p-4 md:p-8 max-w-screen-xl mx-auto w-full">
-        <h1 className="text-xl md:text-2xl font-bold mb-6 text-center md:text-left">Paramètres</h1>
+    <div className="p-4 md:p-8 max-w-screen-xl mx-auto w-full">
+      <h1 className="text-xl md:text-2xl font-bold mb-6 text-center md:text-left">Paramètres</h1>
 
-        <ScrollArea className="h-full w-full pr-4">
-          <div className="space-y-6 pb-8">
-            {/* Notifications Settings */}
-            <Card className={isDark ? "bg-gray-800 border-gray-700" : "bg-white border-blue-100"}>
-              <CardHeader className="space-y-1">
-                <CardTitle className="text-xl flex items-center gap-2">
-                  <Bell className="h-5 w-5" />
-                  Préférences de notification
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label className={isDark ? "text-gray-300" : "text-gray-700"}>Notifications par email</Label>
-                    <div className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                      Recevoir des mises à jour par email concernant les rapports de défauts
-                    </div>
-                  </div>
-                  <Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} />
-                </div>
-                <Separator className={isDark ? "bg-gray-700" : "bg-gray-200"} />
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label className={isDark ? "text-gray-300" : "text-gray-700"}>Notifications push</Label>
-                    <div className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                      Recevoir des notifications en temps réel pour les défauts urgents
-                    </div>
-                  </div>
-                  <Switch checked={pushNotifications} onCheckedChange={setPushNotifications} />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Account Settings */}
-            <Card className={isDark ? "bg-gray-800 border-gray-700" : "bg-white border-blue-100"}>
-              <CardHeader className="space-y-1">
-                <CardTitle className="text-xl flex items-center gap-2">
-                  <Shield className="h-5 w-5" />
-                  Paramètres du compte
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label className={isDark ? "text-gray-300" : "text-gray-700"}>Adresse email</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="email"
-                      value="technicien@sntf.dz"
-                      disabled
-                      className={`max-w-md ${isDark ? "bg-gray-700 border-gray-600 text-white" : ""}`}
-                    />
-                    <Button
-                      variant="outline"
-                      className={isDark ? "border-gray-600 text-gray-200 hover:bg-gray-700" : ""}
-                    >
-                      Modifier
-                    </Button>
-                  </div>
-                </div>
-                <Separator className={isDark ? "bg-gray-700" : "bg-gray-200"} />
-                <div className="space-y-2">
-                  <Label className={isDark ? "text-gray-300" : "text-gray-700"}>Mot de passe</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="password"
-                      value="********"
-                      disabled
-                      className={`max-w-md ${isDark ? "bg-gray-700 border-gray-600 text-white" : ""}`}
-                    />
-                    <Button
-                      variant="outline"
-                      className={isDark ? "border-gray-600 text-gray-200 hover:bg-gray-700" : ""}
-                    >
-                      Modifier
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Preferences */}
-            <Card className={isDark ? "bg-gray-800 border-gray-700" : "bg-white border-blue-100"}>
-              <CardHeader className="space-y-1">
-                <CardTitle className="text-xl flex items-center gap-2">
-                  <Globe className="h-5 w-5" />
-                  Préférences
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label className={isDark ? "text-gray-300" : "text-gray-700"}>Langue</Label>
-                  <Select value={language} onValueChange={setLanguage}>
-                    <SelectTrigger
-                      className={`w-full max-w-md ${isDark ? "bg-gray-700 border-gray-600 text-white" : ""}`}
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className={isDark ? "bg-gray-800 border-gray-700" : ""}>
-                      <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="fr">Français</SelectItem>
-                      <SelectItem value="ar">العربية</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Separator className={isDark ? "bg-gray-700" : "bg-gray-200"} />
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label className={isDark ? "text-gray-300" : "text-gray-700"}>Mises à jour automatiques</Label>
-                    <div className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                      Maintenir la vue de la carte mise à jour en temps réel
-                    </div>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Save Button */}
-            <div className="flex justify-end">
-              <Button
-                onClick={handleSaveSettings}
-                className={`px-6 ${
-                  isDark ? "bg-[#0a3172] hover:bg-[#072758] text-white" : "bg-[#0a3172] hover:bg-[#072758] text-white"
+      <div className="space-y-6 pb-8">
+        {/* Account Settings */}
+        <Card>
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-xl flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Paramètres du compte
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {message && (
+              <div
+                className={`p-3 rounded-md text-sm ${
+                  message.includes("succès")
+                    ? "bg-green-100 text-green-700 border border-green-300"
+                    : "bg-red-100 text-red-700 border border-red-300"
                 }`}
               >
-                <Save className="mr-2 h-4 w-4" />
-                Enregistrer les modifications
+                {message}
+              </div>
+            )}
+
+            <form onSubmit={handleChangePassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="current_password">Mot de passe actuel</Label>
+                <Input
+                  id="current_password"
+                  name="current_password"
+                  type="password"
+                  value={passwordData.current_password}
+                  onChange={handleInputChange}
+                  className="max-w-md"
+                />
+                {errors.current_password && <p className="text-sm text-red-500">{errors.current_password}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="new_password">Nouveau mot de passe</Label>
+                <Input
+                  id="new_password"
+                  name="new_password"
+                  type="password"
+                  value={passwordData.new_password}
+                  onChange={handleInputChange}
+                  className="max-w-md"
+                />
+                {errors.new_password && <p className="text-sm text-red-500">{errors.new_password}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirmer le nouveau mot de passe</Label>
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  value={passwordData.confirmPassword}
+                  onChange={handleInputChange}
+                  className="max-w-md"
+                />
+                {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword}</p>}
+              </div>
+
+              <div className="flex justify-end">
+                <Button type="submit" className="px-6 bg-[#0a3172] hover:bg-[#072758] text-white" disabled={isLoading}>
+                  <Save className="mr-2 h-4 w-4" />
+                  {isLoading ? "Modification en cours..." : "Appliquer les modifications"}
+                </Button>
+              </div>
+            </form>
+
+            <div className="pt-4 border-t">
+              <Button
+                onClick={handleLogout}
+                variant="outline"
+                className="w-full md:w-auto border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Se déconnecter
               </Button>
             </div>
-          </div>
-        </ScrollArea>
+          </CardContent>
+        </Card>
       </div>
+    </div>
   )
 }
