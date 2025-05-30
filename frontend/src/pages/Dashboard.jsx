@@ -11,20 +11,6 @@ import { Button } from "@/components/ui/button";
 // Composant pour une carte statistique
 const StatCard = ({ title, value, icon, color, percent = 100 }) => {
   const isDark = document.documentElement.classList.contains("dark");
-<<<<<<< HEAD
-  return (
-    <Card
-      className={
-        isDark ? "bg-gray-800 border-gray-700" : "bg-white border-blue-100"
-      }
-    >
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p
-              className={`text-sm font-medium ${
-                isDark ? "text-gray-400" : "text-gray-500"
-=======
 
   return (
     <Card
@@ -40,33 +26,21 @@ const StatCard = ({ title, value, icon, color, percent = 100 }) => {
             <p
               className={`text-sm font-bold ${
                 isDark ? "text-white" : "text-black"
->>>>>>> origin/backend-malek
               }`}
             >
               {title}
             </p>
-<<<<<<< HEAD
-            <h3 className="text-2xl font-bold mt-1">{value}</h3>
-          </div>
-          <div
-            className={`p-3 rounded-full ${
-=======
             <h3 className="text-lg font-extrabold">{value}</h3>
           </div>
           <div
             className={`p-1 rounded ${
->>>>>>> origin/backend-malek
               isDark ? `${color}-900/30` : `${color}-100`
             }`}
           >
             {icon}
           </div>
         </div>
-<<<<<<< HEAD
-        <div className="mt-4 h-1 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-=======
         <div className="mt-2 h-1 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
->>>>>>> origin/backend-malek
           <div
             className={`h-1 bg-${color}-600 rounded-full`}
             style={{ width: `${percent}%` }}
@@ -131,8 +105,6 @@ const SimpleSelect = ({ id, value, onChange, options, label }) => {
     </div>
   );
 };
-<<<<<<< HEAD
-=======
 const ActiveFiltersSummary = ({ filters, onRemove }) => {
   const renderBadges = [];
 
@@ -175,7 +147,6 @@ const ActiveFiltersSummary = ({ filters, onRemove }) => {
 
   return <div className="mb-4 flex flex-wrap">{renderBadges}</div>;
 };
->>>>>>> origin/backend-malek
 
 export default function Dashboard() {
   const [searchParams] = useSearchParams();
@@ -201,8 +172,6 @@ export default function Dashboard() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   useEffect(() => {
-<<<<<<< HEAD
-=======
     setActiveFilters({
       ...filters,
       searchQuery: searchQuery.toLowerCase(),
@@ -210,7 +179,6 @@ export default function Dashboard() {
   }, [filters, searchQuery]);
 
   useEffect(() => {
->>>>>>> origin/backend-malek
     // Observer le thème
     setIsDark(document.documentElement.classList.contains("dark"));
     const observer = new MutationObserver(() =>
@@ -320,8 +288,6 @@ export default function Dashboard() {
     setActiveFilters(null);
   };
 
-<<<<<<< HEAD
-=======
   const handleRemoveFilter = (key, value) => {
     console.log("Suppression filtre :", key, value);
     const updatedFilters = { ...filters };
@@ -339,7 +305,6 @@ export default function Dashboard() {
     setFilters(updatedFilters);
   };
 
->>>>>>> origin/backend-malek
   return (
     <Layout>
       <div className="p-4 md:p-8 max-w-screen-xl mx-auto w-full">
@@ -443,14 +408,11 @@ export default function Dashboard() {
           />
         </div>
 
-<<<<<<< HEAD
-=======
         <ActiveFiltersSummary
           filters={activeFilters}
           onRemove={handleRemoveFilter}
         />
 
->>>>>>> origin/backend-malek
         {/* Bouton pour afficher/masquer les filtres sur mobile */}
         <div className="md:hidden mb-4">
           <Button
