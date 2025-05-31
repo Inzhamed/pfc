@@ -138,16 +138,15 @@ export default function Map({ highlightDefectId = null, filters = null }) {
   const defautsFiltres = defauts.filter((d) => {
     const query = filters.searchQuery?.toLowerCase();
 
-if (
-  query &&
-  !(
-    (d.description?.toLowerCase().includes(query)) ||
-    (d.localisation?.toLowerCase().includes(query))
-  )
-) {
-  return false;
-}
-
+    if (
+      query &&
+      !(
+        d.description?.toLowerCase().includes(query) ||
+        d.localisation?.toLowerCase().includes(query)
+      )
+    ) {
+      return false;
+    }
 
     if (filters) {
       // Gravité
@@ -186,8 +185,6 @@ if (
       if (filters.date && d.date && !d.date.startsWith(filters.date)) {
         return false;
       }
-
-      
     }
 
     return true;
@@ -250,6 +247,7 @@ if (
           localisation: d.region || "Non spécifiée",
           coords: [d.latitude, d.longitude],
           image: d.image_url,
+          image_data: d.image_data,
           description: d.description,
         }));
 
@@ -364,33 +362,30 @@ if (
 
   // Effet pour mettre en évidence un défaut spécifique
   useEffect(() => {
-  if (highlightDefectId) {
-    const defaut = defauts.find((d) => d._id === highlightDefectId);
-    if (defaut) {
-      setHighlightedDefaut(defaut);
+    if (highlightDefectId) {
+      const defaut = defauts.find((d) => d._id === highlightDefectId);
+      if (defaut) {
+        setHighlightedDefaut(defaut);
+      }
     }
-  }
-
-
   }, [highlightDefectId, defauts]);
 
   function FlyToDefaut({ defaut, markerRefs }) {
-  const map = useMap();
+    const map = useMap();
 
-  useEffect(() => {
-    if (defaut) {
-      map.flyTo(defaut.coords, 15, { duration: 1.5 });
+    useEffect(() => {
+      if (defaut) {
+        map.flyTo(defaut.coords, 15, { duration: 1.5 });
 
-      setTimeout(() => {
-        const marker = markerRefs.current[defaut._id];
-        if (marker) marker.openPopup();
-      }, 800);
-    }
-  }, [defaut]);
+        setTimeout(() => {
+          const marker = markerRefs.current[defaut._id];
+          if (marker) marker.openPopup();
+        }, 800);
+      }
+    }, [defaut]);
 
-  return null;
-}
-
+    return null;
+  }
 
   return (
     <MapContainer
@@ -408,9 +403,8 @@ if (
 
       {/* Composant pour centrer la carte sur le défaut sélectionné */}
       {highlightedDefaut && (
-  <FlyToDefaut defaut={highlightedDefaut} markerRefs={markerRefs} />
-)}
-
+        <FlyToDefaut defaut={highlightedDefaut} markerRefs={markerRefs} />
+      )}
 
       {defautsFiltres.map((defaut) => (
         <Marker
@@ -443,7 +437,11 @@ if (
               </p>
               {defaut.image && (
                 <img
-                  src={defaut.image}
+                  src={
+                    defaut.image_data
+                      ? `data:image/jpeg;base64,${defaut.image_data}`
+                      : defaut.image
+                  }
                   alt="Image du défaut"
                   className="w-full h-24 object-cover rounded mt-2"
                 />
