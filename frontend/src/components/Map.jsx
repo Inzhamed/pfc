@@ -17,19 +17,22 @@ import { FileText } from "lucide-react";
 
 const icons = {
   critique: new L.Icon({
-    iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+    iconUrl:
+      "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
     iconSize: [25, 41],
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],
   }),
   modere: new L.Icon({
-    iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png",
+    iconUrl:
+      "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png",
     iconSize: [25, 41],
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],
   }),
   mineur: new L.Icon({
-    iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
+    iconUrl:
+      "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
     iconSize: [25, 41],
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],
@@ -115,10 +118,14 @@ function GraviteBadge({ niveau }) {
     "non réparable": "bg-gray-500 text-white",
   };
   return (
-    <span className={`text-xs px-2 py-1 rounded-full ${styles[niveau] || "bg-gray-300"}`}>
+    <span
+      className={`text-xs px-2 py-1 rounded-full ${
+        styles[niveau] || "bg-gray-300"
+      }`}
+    >
       {niveau.charAt(0).toUpperCase() + niveau.slice(1)}
     </span>
-  )
+  );
 }
 
 export default function Map({ highlightDefectId = null, filters = null }) {
@@ -131,16 +138,15 @@ export default function Map({ highlightDefectId = null, filters = null }) {
   const defautsFiltres = defauts.filter((d) => {
     const query = filters.searchQuery?.toLowerCase();
 
-if (
-  query &&
-  !(
-    (d.description?.toLowerCase().includes(query)) ||
-    (d.localisation?.toLowerCase().includes(query))
-  )
-) {
-  return false;
-}
-
+    if (
+      query &&
+      !(
+        d.description?.toLowerCase().includes(query) ||
+        d.localisation?.toLowerCase().includes(query)
+      )
+    ) {
+      return false;
+    }
 
     if (filters) {
       // Gravité
@@ -179,8 +185,6 @@ if (
       if (filters.date && d.date && !d.date.startsWith(filters.date)) {
         return false;
       }
-
-      
     }
 
     return true;
@@ -243,6 +247,7 @@ if (
           localisation: d.region || "Non spécifiée",
           coords: [d.latitude, d.longitude],
           image: d.image_url,
+          image_data: d.image_data,
           description: d.description,
         }));
 
@@ -317,7 +322,7 @@ if (
     color: "#0a3172",
     weight: 4,
     opacity: 0.9,
-  }
+  };
 
   // Fonction pour générer un rapport à partir d'un défaut
   const handleGenerateReport = (defaut) => {
@@ -357,36 +362,38 @@ if (
 
   // Effet pour mettre en évidence un défaut spécifique
   useEffect(() => {
-  if (highlightDefectId) {
-    const defaut = defauts.find((d) => d._id === highlightDefectId);
-    if (defaut) {
-      setHighlightedDefaut(defaut);
+    if (highlightDefectId) {
+      const defaut = defauts.find((d) => d._id === highlightDefectId);
+      if (defaut) {
+        setHighlightedDefaut(defaut);
+      }
     }
-  }
-
-
   }, [highlightDefectId, defauts]);
 
   function FlyToDefaut({ defaut, markerRefs }) {
-  const map = useMap();
+    const map = useMap();
 
-  useEffect(() => {
-    if (defaut) {
-      map.flyTo(defaut.coords, 15, { duration: 1.5 });
+    useEffect(() => {
+      if (defaut) {
+        map.flyTo(defaut.coords, 15, { duration: 1.5 });
 
-      setTimeout(() => {
-        const marker = markerRefs.current[defaut._id];
-        if (marker) marker.openPopup();
-      }, 800);
-    }
-  }, [defaut]);
+        setTimeout(() => {
+          const marker = markerRefs.current[defaut._id];
+          if (marker) marker.openPopup();
+        }, 800);
+      }
+    }, [defaut]);
 
-  return null;
-}
-
+    return null;
+  }
 
   return (
-    <MapContainer center={[36.75, 3.05]} zoom={13} scrollWheelZoom={true} className="h-[600px] w-full rounded-xl z-0">
+    <MapContainer
+      center={[36.75, 3.05]}
+      zoom={13}
+      scrollWheelZoom={true}
+      className="h-[600px] w-full rounded-xl z-0"
+    >
       <TileLayer
         attribution="&copy; OpenStreetMap contributors"
         url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
@@ -396,9 +403,8 @@ if (
 
       {/* Composant pour centrer la carte sur le défaut sélectionné */}
       {highlightedDefaut && (
-  <FlyToDefaut defaut={highlightedDefaut} markerRefs={markerRefs} />
-)}
-
+        <FlyToDefaut defaut={highlightedDefaut} markerRefs={markerRefs} />
+      )}
 
       {defautsFiltres.map((defaut) => (
         <Marker
@@ -412,20 +418,30 @@ if (
           <Popup>
             <div className="p-2 max-w-xs text-sm space-y-1 dark:text-white">
               <p className="font-semibold">
-                🔧 Type :<span className="text-blue-600 dark:text-blue-300"> {defaut.type}</span>
+                🔧 Type :
+                <span className="text-blue-600 dark:text-blue-300">
+                  {" "}
+                  {defaut.type}
+                </span>
               </p>
               <p>
-                🗓️ Date : <span className="text-muted-foreground">{defaut.date}</span>
+                🗓️ Date :{" "}
+                <span className="text-muted-foreground">{defaut.date}</span>
               </p>
               <p>
-                📍 Lieu : <span className="font-medium">{defaut.localisation}</span>
+                📍 Lieu :{" "}
+                <span className="font-medium">{defaut.localisation}</span>
               </p>
               <p>
                 📊 Gravité : <GraviteBadge niveau={defaut.niveau} />
               </p>
               {defaut.image && (
                 <img
-                  src={defaut.image}
+                  src={
+                    defaut.image_data
+                      ? `data:image/jpeg;base64,${defaut.image_data}`
+                      : defaut.image
+                  }
                   alt="Image du défaut"
                   className="w-full h-24 object-cover rounded mt-2"
                 />
@@ -465,5 +481,5 @@ if (
         </Marker>
       ))}
     </MapContainer>
-  )
+  );
 }
