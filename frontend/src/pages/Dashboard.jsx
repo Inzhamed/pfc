@@ -560,16 +560,16 @@ export default function Dashboard() {
                         label="Joint"
                       />
                       <SimpleCheckbox
-                        id="squad"
+                        id="squat"
                         checked={filters.typeDefaut.includes("Squad")}
                         onChange={() => handleTypeDefautChange("Squad")}
-                        label="Squad"
+                        label="Squat"
                       />
                       <SimpleCheckbox
-                        id="ssquad"
+                        id="ssquat"
                         checked={filters.typeDefaut.includes("SSquad")}
                         onChange={() => handleTypeDefautChange("SSquad")}
-                        label="SSquad"
+                        label="SSquat"
                       />
                     </div>
                   </div>
