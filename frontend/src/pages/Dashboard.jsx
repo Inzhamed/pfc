@@ -167,6 +167,7 @@ export default function Dashboard() {
     statut: [],
     typeDefaut: [], // Ajout du filtre pour le type de défaut
   });
+  const [filteredDefauts, setFilteredDefauts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -179,6 +180,46 @@ export default function Dashboard() {
   }, [filters, searchQuery]);
 
   useEffect(() => {
+    if (filteredDefauts && filteredDefauts.length > 0) {
+      const total = filteredDefauts.length;
+      const critiques = filteredDefauts.filter(
+        (d) => d.niveau_defaut?.toLowerCase() === "critique"
+      ).length;
+      const enAttente = filteredDefauts.filter(
+        (d) =>
+          d.statut?.toLowerCase() === "en attente" ||
+          d.statut?.toLowerCase() === "enattente"
+      ).length;
+      const enCours = filteredDefauts.filter(
+        (d) =>
+          d.statut?.toLowerCase() === "en cours" ||
+          d.statut?.toLowerCase() === "encours"
+      ).length;
+      const resolus = filteredDefauts.filter(
+        (d) =>
+          d.statut?.toLowerCase() === "résolu" ||
+          d.statut?.toLowerCase() === "resolu"
+      ).length;
+
+      setStats({
+        total,
+        critiques,
+        enAttente,
+        enCours,
+        resolus,
+      });
+    } else {
+      setStats({
+        total: 0,
+        critiques: 0,
+        enAttente: 0,
+        enCours: 0,
+        resolus: 0,
+      });
+    }
+  }, [filteredDefauts]);
+
+  useEffect(() => {
     // Observer le thème
     setIsDark(document.documentElement.classList.contains("dark"));
     const observer = new MutationObserver(() =>
@@ -188,19 +229,6 @@ export default function Dashboard() {
       attributes: true,
       attributeFilter: ["class"],
     });
-
-    // Charger les statistiques
-    setTimeout(
-      () =>
-        setStats({
-          total: 9,
-          critiques: 3,
-          enAttente: 5,
-          enCours: 2,
-          resolus: 2,
-        }),
-      500
-    );
 
     // Log du défaut sélectionné
     if (defectId) console.log(`Défaut sélectionné: ${defectId}`);
@@ -268,11 +296,11 @@ export default function Dashboard() {
 
   const applyFilters = () => {
     console.log("Filtres appliqués:", filters);
-    // Appliquer les filtres à la carte
     setActiveFilters({
       ...filters,
       searchQuery: searchQuery.toLowerCase(),
     });
+    fetchFilteredDefauts();
   };
 
   const resetFilters = () => {
@@ -303,6 +331,35 @@ export default function Dashboard() {
     }
 
     setFilters(updatedFilters);
+  };
+
+  const fetchFilteredDefauts = async () => {
+    try {
+      const params = new URLSearchParams();
+
+      filters.gravite.forEach((g) => params.append("niveau_defaut", g));
+      filters.typeDefaut.forEach((t) => params.append("type_defaut", t));
+      filters.statut.forEach((s) => params.append("statut", s));
+      if (filters.zone && filters.zone !== "all")
+        params.append("region", filters.zone);
+      if (filters.trajet && filters.trajet !== "all")
+        params.append("trajet", filters.trajet);
+      if (filters.date) params.append("date", filters.date);
+      if (searchQuery) params.append("search", searchQuery);
+      params.append("page", "1");
+      params.append("limit", "100");
+
+      const res = await fetch(
+        `http://localhost:8000/defauts/filter?${params.toString()}`
+      );
+      const data = await res.json();
+      setFilteredDefauts(data);
+    } catch (err) {
+      console.error(
+        "Erreur lors de la récupération des défauts filtrés :",
+        err
+      );
+    }
   };
 
   return (
@@ -430,7 +487,11 @@ export default function Dashboard() {
           {/* Carte interactive */}
           <div className="w-full md:w-2/3 lg:w-3/4">
             <div className="w-full h-[400px] md:h-[600px] rounded-lg overflow-hidden shadow">
-              <Map highlightDefectId={defectId} filters={activeFilters} />
+              <Map
+                highlightDefectId={defectId}
+                filters={activeFilters}
+                defauts={filteredDefauts}
+              />
             </div>
           </div>
 

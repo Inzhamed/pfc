@@ -128,12 +128,34 @@ function GraviteBadge({ niveau }) {
   );
 }
 
-export default function Map({ highlightDefectId = null, filters = null }) {
+export default function Map({
+  highlightDefectId = null,
+  filters = null,
+  defauts: defautsProp = [],
+}) {
   const [railData, setRailData] = useState(null);
   const navigate = useNavigate();
   const [highlightedDefaut, setHighlightedDefaut] = useState(null);
   const markerRefs = useRef({});
   const [defauts, setDefauts] = useState([]);
+  useEffect(() => {
+    if (defautsProp && defautsProp.length > 0) {
+      const transformed = defautsProp.map((d) => ({
+        _id: d._id?.$oid || d._id,
+        type: d.type_defaut,
+        statut: d.statut === "résolu" ? "Résolu" : "En attente",
+        date: d.date,
+        niveau: d.niveau_defaut,
+        localisation: d.region || "Non spécifiée",
+        coords: [d.latitude, d.longitude],
+        image: d.image_url,
+        image_data: d.image_data,
+        description: d.description,
+      }));
+      setDefauts(transformed);
+    }
+  }, [defautsProp]);
+
   // Appliquer les filtres dynamiques aux défauts
   const defautsFiltres = defauts.filter((d) => {
     const query = filters.searchQuery?.toLowerCase();
@@ -150,22 +172,25 @@ export default function Map({ highlightDefectId = null, filters = null }) {
 
     if (filters) {
       // Gravité
-      if (filters.gravite.length > 0 && !filters.gravite.includes(d.niveau)) {
+      if (
+        filters.gravite.length > 0 &&
+        !filters.gravite.includes(d.niveau?.toLowerCase())
+      )
         return false;
-      }
 
       // Statut
-      if (filters.statut.length > 0 && !filters.statut.includes(d.statut)) {
+      if (
+        filters.statut.length > 0 &&
+        !filters.statut.includes(d.statut?.toLowerCase())
+      )
         return false;
-      }
 
       // Type de défaut
       if (
         filters.typeDefaut.length > 0 &&
-        !filters.typeDefaut.includes(d.type)
-      ) {
+        !filters.typeDefaut.includes(d.type?.toLowerCase())
+      )
         return false;
-      }
 
       // Zone (region)
       if (filters.zone !== "all" && d.localisation !== filters.zone) {
