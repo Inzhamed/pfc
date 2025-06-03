@@ -137,11 +137,7 @@ const ActiveFiltersSummary = ({ filters, onRemove, onClearAll }) => {
     addBadge("trajet", filters.trajet, "Trajet")
   }
 
-  // Date
-  if (filters.date) {
-    addBadge("date", filters.date, "Date")
-  }
-
+  
   // Recherche
   if (filters.searchQuery) {
     addBadge("searchQuery", filters.searchQuery, "Recherche")
@@ -314,11 +310,7 @@ export default function Dashboard() {
         params.append("trajet", filters.trajet)
       }
 
-      // Gestion de la date
-      if (filters.date) {
-        params.append("date", filters.date)
-      }
-
+     
       // Gestion de la recherche
       if (searchQuery.trim()) {
         params.append("search", searchQuery.trim())
@@ -704,24 +696,7 @@ export default function Dashboard() {
                     ]}
                   />
 
-                  {/* Filtre par date */}
-                  <div className="space-y-1">
-                    <label
-                      htmlFor="date"
-                      className={`block text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}
-                    >
-                      Date
-                    </label>
-                    <input
-                      id="date"
-                      type="date"
-                      className={`block w-full rounded-md border ${
-                        isDark ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300 text-gray-900"
-                      } px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                      value={filters.date}
-                      onChange={(e) => handleFilterChange("date", e.target.value)}
-                    />
-                  </div>
+                 
                 </div>
 
                 {/* Boutons d'action */}
