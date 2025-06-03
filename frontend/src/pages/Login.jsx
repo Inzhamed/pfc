@@ -155,9 +155,7 @@ const LoginPage = () => {
                 Se souvenir de moi
               </label>
             </div>
-            <a href="#" className={`text-sm ${isDark ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-800"}`}>
-              Mot de passe oublié ?
-            </a>
+            
           </div>
 
           <button

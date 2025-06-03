@@ -131,7 +131,7 @@ export default function Settings() {
       localStorage.removeItem("token")
 
       // Rediriger vers la page de connexion
-      navigate("/login")
+      navigate("/Login")
     } catch (error) {
       console.error("Erreur lors de la déconnexion:", error)
       // Même en cas d'erreur, on supprime le token et on redirige
