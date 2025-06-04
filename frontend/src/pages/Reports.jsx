@@ -97,12 +97,7 @@ export default function Reports() {
       placeholder: "Ex: Technicienne d'inspection",
     },
     { id: "report-date", label: "Date", icon: <CalendarDays className="w-4 h-4" />, type: "date", defaultValue: today },
-    {
-      id: "location",
-      label: "Localisation du défaut",
-      icon: <MapPin className="w-4 h-4" />,
-      placeholder: "Ex : Voie 3 - KM 47.3",
-    },
+    
     {
       id: "line",
       label: "Ligne ferroviaire",

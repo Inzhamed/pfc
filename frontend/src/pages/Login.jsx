@@ -144,19 +144,7 @@ const LoginPage = () => {
             />
           </div>
 
-          <div className="mb-6 flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="remember"
-                className={`rounded ${isDark ? "bg-gray-700 border-gray-600" : "bg-white border-gray-300"} focus:ring-blue-500`}
-              />
-              <label htmlFor="remember" className={`ml-2 text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                Se souvenir de moi
-              </label>
-            </div>
-            
-          </div>
+          
 
           <button
             type="submit"
