@@ -18,13 +18,12 @@ export interface Defect {
     mileMarker: number;
   };
   detected_at: string;
-  imageUrl: string;
+  image_url: string;
   description: string;
   status: RepairStatus;
   assignedTo?: string;
   scheduledRepair?: string;
 }
-
 
 // Returns the counts of defects by severity
 export function getDefectStatistics(defects: Defect[]) {

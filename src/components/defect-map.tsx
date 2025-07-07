@@ -253,7 +253,11 @@ export const DefectMap: React.FC<DefectMapProps> = ({
             <div className="bg-card border-b">
               <div className="aspect-video bg-muted relative">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-lg font-medium">{selectedDefect.type.toUpperCase()}</div>
+                  <img
+                    src={`http://localhost:8000/${selectedDefect.image_url}`}
+                    alt="Defect"
+                    className="object-contain w-full h-full"
+                  />
                 </div>
               </div>
 
@@ -264,7 +268,7 @@ export const DefectMap: React.FC<DefectMapProps> = ({
                 </div>
 
                 <div className="space-y-2 text-sm">
-                  <p className="text-muted-foreground">{selectedDefect.description}</p>
+                  <div className="text-muted-foreground">{selectedDefect.type.toUpperCase()}</div>
                   <p>Track: {selectedDefect.location.trackId}</p>
                   <p>Mile marker: {selectedDefect.location.mileMarker}</p>
                   <p>Detected: {format(new Date(selectedDefect.detected_at), 'PPP p')}</p>

@@ -34,6 +34,13 @@ export default function SettingsPage() {
       try {
         const res = await axios.get(`${API_BASE_URL}/users/${userId}`);
         setNewEmail(res.data.email);
+        // Sync notification preferences
+        if (res.data.notifications) {
+          setEmailNotifications(res.data.notifications.email ?? true);
+          setPushNotifications(res.data.notifications.push ?? true);
+        }
+        // Sync language
+        setLanguage(res.data.language || "en");
       } catch (err) {
         console.error(err);
       }
@@ -61,6 +68,31 @@ export default function SettingsPage() {
     }
   }
 
+  async function handleNotificationChange(type: "email" | "push", value: boolean) {
+    try {
+      const notifications = {
+        email: type === "email" ? value : emailNotifications,
+        push: type === "push" ? value : pushNotifications,
+      };
+      await axios.put(`${API_BASE_URL}/users/${userId}`, { notifications });
+      if (type === "email") setEmailNotifications(value);
+      if (type === "push") setPushNotifications(value);
+      toast({ title: "Notification preferences updated!" });
+    } catch (error) {
+      toast({ title: "Failed to update notifications", variant: "destructive" });
+    }
+  }
+
+  async function handleLanguageChange(value: string) {
+    try {
+      await axios.put(`${API_BASE_URL}/users/${userId}`, { language: value });
+      setLanguage(value);
+      toast({ title: "Language updated!" });
+    } catch (error) {
+      toast({ title: "Failed to update language", variant: "destructive" });
+    }
+  }
+
   return (
     <DashboardLayout onDefectSelect={setSelectedDefect}>
       <ScrollArea className="h-full w-full">
@@ -83,7 +115,7 @@ export default function SettingsPage() {
                 </div>
                 <Switch
                   checked={emailNotifications}
-                  onCheckedChange={setEmailNotifications}
+                  onCheckedChange={(val) => handleNotificationChange("email", val)}
                 />
               </div>
               <Separator />
@@ -96,7 +128,7 @@ export default function SettingsPage() {
                 </div>
                 <Switch
                   checked={pushNotifications}
-                  onCheckedChange={setPushNotifications}
+                  onCheckedChange={(val) => handleNotificationChange("push", val)}
                 />
               </div>
             </CardContent>
@@ -140,7 +172,7 @@ export default function SettingsPage() {
           </Card>
 
           {/* Preferences */}
-          <Card>
+          {/* <Card>
             <CardHeader className="space-y-1">
               <CardTitle className="text-2xl flex items-center gap-2">
                 <Globe className="h-5 w-5" />
@@ -150,7 +182,7 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Language</Label>
-                <Select value={language} onValueChange={setLanguage}>
+                <Select value={language} onValueChange={handleLanguageChange}>
                   <SelectTrigger className="w-full max-w-md">
                     <SelectValue />
                   </SelectTrigger>
@@ -161,18 +193,8 @@ export default function SettingsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Automatic Updates</Label>
-                  <div className="text-sm text-muted-foreground">
-                    Keep the map view updated in real-time
-                  </div>
-                </div>
-                <Switch defaultChecked />
-              </div>
             </CardContent>
-          </Card>
+          </Card> */}
           
           {/* Add some bottom padding to ensure everything is visible when scrolling */}
           <div className="h-6"></div>
